@@ -35,15 +35,17 @@ class ItemCellWithImageWithSwitch : BaseItemCell {
         // imageView
         imageView.leftToSuperview()
         imageView.centerY(to: self)
-        imageView.height(sizeUnit * 1.5, relation: .equalOrLess)
+        imageView.height(to: self, multiplier: 0.55, relation: .equal)
         imageView.widthToHeight(of: imageView)
         
         // rightView
-        rightView.edgesToSuperview(excluding: .left, usingSafeArea: false)
-        rightView.width(sizeUnit * 2)
+        rightView.rightToSuperview()
+        rightView.centerY(to: self)
+        rightView.height(to: imageView, multiplier: 1.00)
+        rightView.widthToHeight(of: self, multiplier: 1.00)
         
         // labelsVerticalStack
-        labelsVerticalStack.leftToRight(of: imageView, offset: sizeUnit / 2)
+        labelsVerticalStack.leftToRight(of: imageView, offset: sizeUnit / 1.5)
         labelsVerticalStack.topToSuperview()
         labelsVerticalStack.rightToLeft(of: rightView, offset: -sizeUnit / 2)
         labelsVerticalStack.bottomToSuperview()

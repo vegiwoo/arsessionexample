@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "planar_Icon_None.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

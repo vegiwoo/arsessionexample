@@ -32,10 +32,10 @@ extension ARSessionView {
     }
     
     func makeFunctionalButton (sfSymbolName: String) -> UIButton {
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
         button.translatesAutoresizingMaskIntoConstraints = false
         button.backgroundColor = .clear
-        let segmentedControlSymbolsConfig = UIImage.SymbolConfiguration(pointSize: 35, weight: .light, scale: .medium)
+        let segmentedControlSymbolsConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
         let titleImage = UIImage(systemName: sfSymbolName, withConfiguration: segmentedControlSymbolsConfig)!.withTintColor(.white, renderingMode: .alwaysOriginal)
         button.setImage(titleImage, for: .normal)
         button.alpha = 0.7

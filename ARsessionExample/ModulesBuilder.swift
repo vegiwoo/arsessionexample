@@ -13,4 +13,10 @@ final class ModulesBuilder {
         let vm = ARSessionVMImplement(arSessionViewEvent: arSessionViewEvent)
         return ARSessionVC(vm: vm, arSessionViewEvent: arSessionViewEvent)
     }
+    
+    static func createArSessionSettingsModule(options : [ARSessionSettingsOptions]) -> UIViewController? {
+        let arSessionSettingsViewEvent = ARSessionSettingsViewEvent()
+        let vm = ARSessionSettingsVMImplement(options: options, arSessionSettingsViewEvent: arSessionSettingsViewEvent)
+        return ARSessionSettingsVC(vm: vm, arSessionSettingsViewEvent: arSessionSettingsViewEvent)
+    }
 }

@@ -9,7 +9,14 @@ import Foundation
 
 extension ARSessionSettingsView {
     func setupView() {
-        // setup UICollectionView
-        self.setupCollectionView(layout: self.layout)
+        self.backgroundColor = .systemGray5
+        
+        self.addSubview(closeButton)
+        
+        self.addSubview(titleLabel)
+        titleLabel.text = "Settings"
+        
+        self.addSubview(collectionView)
+        collectionView.backgroundColor = self.backgroundColor
     }
 }

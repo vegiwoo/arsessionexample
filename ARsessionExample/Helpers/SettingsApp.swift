@@ -8,7 +8,12 @@
 import UIKit
 
 final class SettingsApp {
+    
     static var sizeUnit: CGFloat = (UIScreen.main.bounds.width > UIScreen.main.bounds.height ? UIScreen.main.bounds.width : UIScreen.main.bounds.height) / 30
+    
+    static var horizontalCellHeight = sizeСalculation(value: 70)
+    
+    static var hightTextFieldsAndButtons = sizeСalculation(value: 40)
     
     public static func sizeСalculation (value : CGFloat) -> CGFloat {
         return UIDevice.current.userInterfaceIdiom == .phone ? value : value * 1.5

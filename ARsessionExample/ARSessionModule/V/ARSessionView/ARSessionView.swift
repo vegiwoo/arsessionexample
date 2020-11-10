@@ -24,13 +24,12 @@ class ARSessionView : UIView {
     
     lazy var functionalButtonsStack : UIStackView = makeFunctionalButtonsStack()
     
-    
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
         super.init(frame: frame)
+        
         self.setupView()
         self.setupConstrains()
-        self.addTargets()
         
         self.viewData = .initial
     }
@@ -48,10 +47,6 @@ class ARSessionView : UIView {
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
         }
-    }
-
-    fileprivate func addTargets() {
-        
     }
 }
 

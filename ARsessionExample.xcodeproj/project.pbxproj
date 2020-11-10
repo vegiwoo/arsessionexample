@@ -99,8 +99,8 @@
 			children = (
 				77F6C28F255AC47B00B1C172 /* Helpers */,
 				77F6C262255AB29A00B1C172 /* Common */,
-				77F6C254255AB06F00B1C172 /* ARSessionSettingsModule */,
 				77F6C235255A995F00B1C172 /* ARSessionModule */,
+				77F6C254255AB06F00B1C172 /* ARSessionSettingsModule */,
 				77F6C230255A98FE00B1C172 /* HelpeCode */,
 				77F6C220255A97E200B1C172 /* LaunchScreen.storyboard */,
 				77F6C22B255A983000B1C172 /* ModulesBuilder.swift */,

@@ -23,7 +23,7 @@ class ARSessionSettingsView : UIView {
         var name : String {
             switch self {
             case .planeDetectionMode:
-                return "Plane detection mode".uppercased()
+                return "Plane detection modes".uppercased()
             }
         }
     }
@@ -37,6 +37,23 @@ class ARSessionSettingsView : UIView {
     internal var snapshot = DataSourceSnapShot()
     
     // MARK: UIControls
+    lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 1
+        label.font = UIFont(name: "PingFangHK-Semibold", size: SettingsApp.sizeСalculation(value: 36))
+        label.textColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
+        return label
+    }()
+    lazy var closeButton: UIButton = {
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = .clear
+        let segmentedControlSymbolsConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
+        let titleImage = UIImage(systemName: "xmark", withConfiguration: segmentedControlSymbolsConfig)!.withTintColor(#colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1), renderingMode: .alwaysOriginal)
+        button.setImage(titleImage, for: .normal)
+        return button
+    }()
     var layout: UICollectionViewLayout!
     var collectionView : UICollectionView!
     
@@ -46,6 +63,7 @@ class ARSessionSettingsView : UIView {
         self.arSessionSettingsViewEvent = arSessionSettingsViewEvent
         super.init(frame: frame)
         
+        self.setupCollectionView(layout: self.layout)
         self.setupView()
         self.setupConstraints()
     }
@@ -67,11 +85,8 @@ class ARSessionSettingsView : UIView {
         }
     }
     
-    
-    
     func setupCollectionView(layout: UICollectionViewLayout) {
         self.collectionView =  UICollectionView(frame: .zero, collectionViewLayout: layout)
-        self.collectionView.backgroundColor = .systemGray5
         self.collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.collectionView.delegate = self
         
@@ -84,7 +99,7 @@ class ARSessionSettingsView : UIView {
     }
     
     func configureCollectionViewDataSource() -> DataSource {
-        let dataSource = DataSource(collectionView: self.collectionView, cellProvider: { (collectionView, indexPath, option) -> UICollectionViewCell? in
+        let dataSource = DataSource(collectionView: self.collectionView, cellProvider: { (collectionView, indexPath, option) -> ItemCellWithImageWithSwitch? in
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ItemCellWithImageWithSwitch.reuseIdentifier, for: indexPath) as! ItemCellWithImageWithSwitch
             
@@ -110,9 +125,15 @@ class ARSessionSettingsView : UIView {
     
     fileprivate func configure(cell: ItemCellWithImageWithSwitch, with option: ARSessionSettingsOptions) {
         
+        // image
+        if let image = option.image {
+            cell.imageView.image = image
+            cell.imageView.backgroundColor = .clear
+        }
+
         // labels
         if let info01Label = cell.info01Label{
-            info01Label.text = option.name
+            info01Label.text = option.name.uppercased()
         }
         
         if let info03Label = cell.info03Label{
@@ -133,7 +154,7 @@ class ARSessionSettingsView : UIView {
         
         let sections = Section.allCases
         snapshot.appendSections(sections)
-        
+
         for section in sections {
             switch section {
             case .planeDetectionMode:
@@ -142,8 +163,11 @@ class ARSessionSettingsView : UIView {
                 }
             }
         }
+        
+        self.datasource.apply(snapshot)
+        self.viewData = .initial
     }
-    
+
     @objc fileprivate func accessorySwitchValueChangeHandler (sender: PWSwitch) {
         if let cell = sender.superview as? ItemCellWithImageWithSwitch,
            let indexPath = collectionView.indexPath(for: cell),

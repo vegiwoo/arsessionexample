@@ -5,18 +5,20 @@
 //  Created by Dmitry Samartcev on 10.11.2020.
 //
 
-import Foundation
+import UIKit
 
 /// Represents options for customization
 class ARSessionSettingsOptions : Hashable  {
     let name        : String
     let group       : ARSessionSettingsOptionsGroup
     let description : String
+    let image       : UIImage?
     var isSelected  : Bool
     
-    init(key: ARSessionSettingsOptionsKeys, group: ARSessionSettingsOptionsGroup, isSelected: Bool) {
+    init(key: ARSessionSettingsOptionsKeys, group: ARSessionSettingsOptionsGroup, image: UIImage? = nil, isSelected: Bool) {
         self.name = key.name
         self.description = key.description
+        self.image = image
         self.group = group
         self.isSelected = isSelected
     }

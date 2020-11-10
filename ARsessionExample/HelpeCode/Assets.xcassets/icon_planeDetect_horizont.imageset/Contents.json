@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Planar_Icon_Horizont.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

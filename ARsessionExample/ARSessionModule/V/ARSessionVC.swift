@@ -27,6 +27,7 @@ class ARSessionVC : UIViewController {
         self.restorationIdentifier = "ARSessionVC"
         self.createView()
         self.updateView()
+        self.addTargets()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,15 +42,39 @@ class ARSessionVC : UIViewController {
         UIApplication.shared.isIdleTimerDisabled = false
     }
     
-    func createView() {
+    fileprivate func createView() {
         self.arSessionView = ARSessionView(frame: .zero, arSessionViewEvent: self.sessionViewEvent)
         self.view = self.arSessionView
     }
     
-    func updateView() {
+    fileprivate func updateView() {
         self.vm.updateViewData = { [weak self] viewData in
             self?.arSessionView.viewData = viewData
         }
+    }
+    
+    fileprivate func addTargets() {
+        self.arSessionView.settingsButton.addTarget(self, action: #selector(settingsButtonTapHandler), for: .touchUpInside)
+    }
+    
+    // MARK: Action handlers
+    @objc fileprivate func settingsButtonTapHandler(sender: UIButton) {
+        
+        // Get the current settings for ARSession
+        let currentSessionOptons = self.vm.gettingCurrentSettingsFromARSession()
+        
+        // Create and call ARSessionSettingsVC
+        if let arSessionSettingsVC = ModulesBuilder.createArSessionSettingsModule(options: currentSessionOptons) as? ARSessionSettingsVC {
+            let viewNC = UINavigationController(rootViewController: arSessionSettingsVC)
+            viewNC.setNavigationBarHidden(true, animated: false)
+            arSessionSettingsVC.modalPresentationStyle = .popover
+            arSessionSettingsVC.arSessionVC = self
+            present(viewNC, animated: true, completion: nil)
+        }
+    }
+    
+    func receivingNewSettingsForARSession(options: ARSessionSettingsOptions) {
+        self.vm.receivingNewSettingsForARSession(options: options)
     }
 }
 
