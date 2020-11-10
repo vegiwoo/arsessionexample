@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import ARKit
 
 enum ARSessionData {
     case initial
+    case linkTo(arSession: ARSession)
 }

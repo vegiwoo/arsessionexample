@@ -4,8 +4,10 @@
 //  Created by Dmitry Samartcev on 10.11.2020.
 
 import UIKit
+import RealityKit
 import Combine
 
+/// Class for the ArSession view
 class ARSessionView : UIView {
     
     var viewData: ARSessionData = .initial {
@@ -16,12 +18,17 @@ class ARSessionView : UIView {
     
     private var arSessionViewEvent : ARSessionViewEvent!
     
+    // UI cotrols
+    lazy var arView : ARView = self.makeArView()
+    
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
         super.init(frame: frame)
         self.setupView()
         self.setupConstrains()
         self.addTargets()
+        
+        self.viewData = .initial
     }
     
     required init?(coder: NSCoder) {
@@ -32,9 +39,10 @@ class ARSessionView : UIView {
         super.layoutSubviews()
         
         switch viewData {
-    
         case .initial:
-            print("Hello")
+            break
+        case .linkTo(arSession: let arSession):
+            self.arView.session = arSession
         }
     }
 

@@ -5,6 +5,7 @@
 
 import UIKit
 
+/// Class for ArSession controller 
 class ARSessionVC : UIViewController {
     
     private var vm: ARSessionVM!
@@ -30,7 +31,7 @@ class ARSessionVC : UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.vm.delegate = self
-        UIApplication.shared.isIdleTimerDisabled = true
+        self.vm.createAndRunARSession()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
