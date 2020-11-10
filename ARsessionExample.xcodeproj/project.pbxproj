@@ -25,6 +25,12 @@
 		77F6C264255AB2AF00B1C172 /* BaseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C263255AB2AF00B1C172 /* BaseItemCell.swift */; };
 		77F6C267255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C266255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift */; };
 		77F6C278255AB94900B1C172 /* ItemCellNoImageWithSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C277255AB94900B1C172 /* ItemCellNoImageWithSwitch.swift */; };
+		77F6C27D255ABC4400B1C172 /* ARSessionSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C27C255ABC4400B1C172 /* ARSessionSettingsView.swift */; };
+		77F6C280255ABCCF00B1C172 /* ARSessionSettingsOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C27F255ABCCF00B1C172 /* ARSessionSettingsOptions.swift */; };
+		77F6C283255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C282255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift */; };
+		77F6C289255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */; };
+		77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */; };
+		77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C290255AC49100B1C172 /* SettingsApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +53,12 @@
 		77F6C263255AB2AF00B1C172 /* BaseItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseItemCell.swift; sourceTree = "<group>"; };
 		77F6C266255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemCellWithImageWithSwitch.swift; sourceTree = "<group>"; };
 		77F6C277255AB94900B1C172 /* ItemCellNoImageWithSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemCellNoImageWithSwitch.swift; sourceTree = "<group>"; };
+		77F6C27C255ABC4400B1C172 /* ARSessionSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARSessionSettingsView.swift; sourceTree = "<group>"; };
+		77F6C27F255ABCCF00B1C172 /* ARSessionSettingsOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARSessionSettingsOptions.swift; sourceTree = "<group>"; };
+		77F6C282255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionSettingsView + UI.swift"; sourceTree = "<group>"; };
+		77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionSettingsView + Constraints.swift"; sourceTree = "<group>"; };
+		77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeaderReusableView.swift; sourceTree = "<group>"; };
+		77F6C290255AC49100B1C172 /* SettingsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsApp.swift; sourceTree = "<group>"; };
 		D9C91E8282AC1BB2470D09DD /* Pods-ARsessionExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARsessionExample.release.xcconfig"; path = "Target Support Files/Pods-ARsessionExample/Pods-ARsessionExample.release.xcconfig"; sourceTree = "<group>"; };
 		DC513E667B149EE87B2A4981 /* Pods_ARsessionExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ARsessionExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,6 +97,7 @@
 		77F6C214255A97DF00B1C172 /* ARsessionExample */ = {
 			isa = PBXGroup;
 			children = (
+				77F6C28F255AC47B00B1C172 /* Helpers */,
 				77F6C262255AB29A00B1C172 /* Common */,
 				77F6C254255AB06F00B1C172 /* ARSessionSettingsModule */,
 				77F6C235255A995F00B1C172 /* ARSessionModule */,
@@ -171,6 +184,7 @@
 		77F6C256255AB08900B1C172 /* V */ = {
 			isa = PBXGroup;
 			children = (
+				77F6C27B255ABC3500B1C172 /* ARSessionSettingsView */,
 				77F6C25C255AB0C000B1C172 /* ARSessionSettingsVC.swift */,
 			);
 			path = V;
@@ -180,6 +194,7 @@
 			isa = PBXGroup;
 			children = (
 				77F6C25F255AB0E100B1C172 /* ARSessionSettingsData.swift */,
+				77F6C27F255ABCCF00B1C172 /* ARSessionSettingsOptions.swift */,
 			);
 			path = M;
 			sourceTree = "<group>";
@@ -206,8 +221,27 @@
 			isa = PBXGroup;
 			children = (
 				77F6C26C255AB66C00B1C172 /* Cells */,
+				77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */,
 			);
 			path = Controls;
+			sourceTree = "<group>";
+		};
+		77F6C27B255ABC3500B1C172 /* ARSessionSettingsView */ = {
+			isa = PBXGroup;
+			children = (
+				77F6C27C255ABC4400B1C172 /* ARSessionSettingsView.swift */,
+				77F6C282255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift */,
+				77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */,
+			);
+			path = ARSessionSettingsView;
+			sourceTree = "<group>";
+		};
+		77F6C28F255AC47B00B1C172 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				77F6C290255AC49100B1C172 /* SettingsApp.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		81534953527F4C2782139773 /* Pods */ = {
@@ -346,19 +380,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */,
 				77F6C216255A97DF00B1C172 /* AppDelegate.swift in Sources */,
 				77F6C278255AB94900B1C172 /* ItemCellNoImageWithSwitch.swift in Sources */,
 				77F6C249255A9DCB00B1C172 /* ARSessionView + UI.swift in Sources */,
 				77F6C260255AB0E100B1C172 /* ARSessionSettingsData.swift in Sources */,
 				77F6C259255AB09D00B1C172 /* ARSessionSettingsVM.swift in Sources */,
+				77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */,
+				77F6C283255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift in Sources */,
 				77F6C25D255AB0C000B1C172 /* ARSessionSettingsVC.swift in Sources */,
 				77F6C233255A993900B1C172 /* ARSessionVC.swift in Sources */,
 				77F6C24C255A9DD700B1C172 /* ARSessionView + Constraints.swift in Sources */,
 				77F6C23B255A999400B1C172 /* ARSessionVM.swift in Sources */,
+				77F6C27D255ABC4400B1C172 /* ARSessionSettingsView.swift in Sources */,
 				77F6C267255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift in Sources */,
 				77F6C22C255A983000B1C172 /* ModulesBuilder.swift in Sources */,
 				77F6C241255A9A7700B1C172 /* ARSessionView.swift in Sources */,
+				77F6C280255ABCCF00B1C172 /* ARSessionSettingsOptions.swift in Sources */,
 				77F6C23E255A99D400B1C172 /* ARSessionData.swift in Sources */,
+				77F6C289255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift in Sources */,
 				77F6C264255AB2AF00B1C172 /* BaseItemCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

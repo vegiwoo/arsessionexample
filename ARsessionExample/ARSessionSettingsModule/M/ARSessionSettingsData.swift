@@ -8,5 +8,6 @@
 import Foundation
 
 enum ARSessionSettingsData {
-    case hello
+    case initial
+    case success(options: [ARSessionSettingsOptions])
 }

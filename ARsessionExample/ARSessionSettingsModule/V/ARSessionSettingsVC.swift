@@ -8,5 +8,23 @@
 import UIKit
 
 class ARSessionSettingsVC : UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.createView()
+        self.updateView()
+        self.addTargets()
+    }
     
+    fileprivate func createView() {
+        
+    }
+    
+    fileprivate func updateView() {
+        
+    }
+    
+    fileprivate func addTargets() {
+        
+    }
 }
