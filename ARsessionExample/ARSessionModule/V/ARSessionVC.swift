@@ -24,6 +24,7 @@ class ARSessionVC : UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.restorationIdentifier = "ARSessionVC"
         self.createView()
         self.updateView()
     }

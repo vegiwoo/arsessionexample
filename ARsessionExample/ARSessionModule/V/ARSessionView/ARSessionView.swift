@@ -20,6 +20,10 @@ class ARSessionView : UIView {
     
     // UI cotrols
     lazy var arView : ARView = self.makeArView()
+    lazy var settingsButton : UIButton = makeFunctionalButton(sfSymbolName: "gear")
+    
+    lazy var functionalButtonsStack : UIStackView = makeFunctionalButtonsStack()
+    
     
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
