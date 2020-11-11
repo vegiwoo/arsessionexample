@@ -80,6 +80,7 @@ class ARSessionSettingsView : UIView {
             break
         case .success(options: let options):
             DispatchQueue.main.async {
+                self.isUserInteractionEnabled = true
                 self.applySnapshot(options: options)
             }
         }
@@ -150,17 +151,22 @@ class ARSessionSettingsView : UIView {
     
     func applySnapshot<T>(options: [T]) {
         
+        guard let options = options as? [ARSessionSettingsOptions] else {fatalError()} // TODO:!!
+        
+        options.forEach {
+            print($0.name, $0.isSelected)
+        }
+        print("-------------------------")
+        
         snapshot = DataSourceSnapShot()
         
         let sections = Section.allCases
         snapshot.appendSections(sections)
-
+        
         for section in sections {
             switch section {
             case .planeDetectionMode:
-                if let options = options as? [ARSessionSettingsOptions] {
-                    snapshot.appendItems(options.filter{$0.group == .planeDetectionMode}, toSection: ARSessionSettingsView.Section(rawValue: section.rawValue))
-                }
+                snapshot.appendItems(options.filter{$0.group == .planeDetectionMode}, toSection: ARSessionSettingsView.Section(rawValue: section.rawValue))
             }
         }
         
@@ -174,6 +180,7 @@ class ARSessionSettingsView : UIView {
            let option = datasource.itemIdentifier(for: indexPath) {
             
             option.isSelected.toggle()
+            self.isUserInteractionEnabled = false
             arSessionSettingsViewEvent.publish(options: option)
         }
     }

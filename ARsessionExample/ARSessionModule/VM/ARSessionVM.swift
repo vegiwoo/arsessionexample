@@ -5,37 +5,44 @@
 import Foundation
 import ARKit
 import Combine
+import PromiseKit
 
 /// Class for ArSession view model delegate.
 protocol ARSessionVMDelegate : class {
-    
+    // ...
 }
 
 /// Class for ArSession view model protocol.
 protocol ARSessionVM {
     var updateViewData: ((ARSessionData) -> ())? { get set }
     var delegate : ARSessionVMDelegate? { get set }
+    var arSessionVMEvent : ARSessionVMEvent! { get set }
     func createAndRunARSession()
     func gettingCurrentSettingsFromARSession() -> [ARSessionSettingsOptions]
-    func receivingNewSettingsForARSession(options: ARSessionSettingsOptions)
+    func receivingNewSettingsForARSession(option: ARSessionSettingsOptions)
 }
 
 /// Class for ArSession view model implimentation.
-final class ARSessionVMImplement : ARSessionVM {
+final class ARSessionVMImplement : NSObject, ARSessionVM {
  
-    
     var updateViewData: ((ARSessionData) -> ())?
     var delegate: ARSessionVMDelegate?
     
-    fileprivate var arSessionViewEvent: ARSessionViewEvent!
-    fileprivate var arSessionViewEventSubscriber: AnyCancellable?
     
     // ArSession
     fileprivate var arSession : ARSession?
     fileprivate var arSessionConfiguration : ARWorldTrackingConfiguration?
     
+    // Publishers && subscribers
+    fileprivate var arSessionViewEvent: ARSessionViewEvent!
+    fileprivate var arSessionViewEventSubscriber: AnyCancellable?
+    var arSessionVMEvent : ARSessionVMEvent!
+    
     init(arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
+        self.arSessionVMEvent = ARSessionVMEvent()
+        super.init()
+        
         subscribe()
     }
     
@@ -52,14 +59,6 @@ final class ARSessionVMImplement : ARSessionVM {
         self.arSessionViewEventSubscriber?.cancel()
     }
     
-    func createAndRunARSession() {
-        self.arSessionConfiguration = makeArSessionConfiguration()
-        self.arSession = ARSession()
-        self.arSession!.run(self.arSessionConfiguration!, options: [.removeExistingAnchors, .resetTracking])
-        UIApplication.shared.isIdleTimerDisabled = true
-        self.updateViewData?(.linkTo(arSession: self.arSession!))
-    }
-
     fileprivate func makeArSessionConfiguration() -> ARWorldTrackingConfiguration {
         let arSessionConfiguration = ARWorldTrackingConfiguration()
         arSessionConfiguration.isCollaborationEnabled = true
@@ -67,6 +66,33 @@ final class ARSessionVMImplement : ARSessionVM {
         arSessionConfiguration.planeDetection = [.horizontal]
         return arSessionConfiguration
     }
+    
+    func createAndRunARSession() {
+        self.arSessionConfiguration = makeArSessionConfiguration()
+        self.arSession = ARSession()
+        self.arSession!.run(self.arSessionConfiguration!, options: [.removeExistingAnchors, .resetTracking])
+        UIApplication.shared.isIdleTimerDisabled = true
+        self.arSession?.delegate = self
+        self.updateViewData?(.linkTo(arSession: self.arSession!))
+    }
+
+    func createARSessionSettingsOptions(group: ARSessionSettingsOptionsGroup) -> [ARSessionSettingsOptions]{
+        switch group {
+        case .planeDetectionMode:
+            var planeDetectionModeOptions = [ARSessionSettingsOptions]()
+            let detectAllPlanesImage = UIImage(named: "icon_planeDetect_all")?.withRenderingMode(.alwaysTemplate)
+            let detectAllPlanes = ARSessionSettingsOptions.init(key: ARSessionSettingsOptionsKeys.detectAllPlanes, group: ARSessionSettingsOptionsGroup.planeDetectionMode, image: detectAllPlanesImage, isSelected: false)
+            let detectVerticalPlanesOnlyImage = UIImage(named: "icon_planeDetect_vertical")?.withRenderingMode(.alwaysTemplate)
+            let detectVerticalPlanesOnly = ARSessionSettingsOptions.init(key: ARSessionSettingsOptionsKeys.detectVerticalPlanesOnly, group: ARSessionSettingsOptionsGroup.planeDetectionMode, image: detectVerticalPlanesOnlyImage, isSelected: false)
+            let detectHorizontalPlanesOnlImage = UIImage(named: "icon_planeDetect_horizont")?.withRenderingMode(.alwaysTemplate)
+            let detectHorizontalPlanesOnly = ARSessionSettingsOptions.init(key: ARSessionSettingsOptionsKeys.detectHorizontalPlanesOnly, group: ARSessionSettingsOptionsGroup.planeDetectionMode, image: detectHorizontalPlanesOnlImage, isSelected: false)
+            let turnOffPlaneDetectionImage = UIImage(named: "icon_planeDetect_none")?.withRenderingMode(.alwaysTemplate)
+            let turnOffPlaneDetection = ARSessionSettingsOptions.init(key: ARSessionSettingsOptionsKeys.turnOffPlaneDetection, group: ARSessionSettingsOptionsGroup.planeDetectionMode, image: turnOffPlaneDetectionImage, isSelected: false)
+            planeDetectionModeOptions.append(contentsOf: [detectAllPlanes,detectVerticalPlanesOnly,detectHorizontalPlanesOnly, turnOffPlaneDetection])
+            return planeDetectionModeOptions
+        }
+    }
+    
     
     func gettingCurrentSettingsFromARSession() -> [ARSessionSettingsOptions] {
  
@@ -101,18 +127,62 @@ final class ARSessionVMImplement : ARSessionVM {
         return currentOptions
     }
     
-    func receivingNewSettingsForARSession(options: ARSessionSettingsOptions) {
-        switch options.group {
+    fileprivate func reconfigureSession(configuration: ARWorldTrackingConfiguration?) {
+        if let session = self.arSession, let configuration = configuration {
+            session.run(configuration, options: [])
+        }
+    }
+    
+    func receivingNewSettingsForARSession(option: ARSessionSettingsOptions) {
+
+        let configuration = ARWorldTrackingConfiguration()
+        
+        switch option.group {
         case .planeDetectionMode:
-            if options.name == ARSessionSettingsOptionsKeys.detectAllPlanes.name {
-                // Go detectAllPlanes
-            } else if options.name == ARSessionSettingsOptionsKeys.detectHorizontalPlanesOnly.name{
-                // Go detectHorizontalPlanesOnly
-            } else if options.name == ARSessionSettingsOptionsKeys.detectVerticalPlanesOnly.name  {
-                // Go detectVerticalPlanesOnly
-            } else if options.name == ARSessionSettingsOptionsKeys.turnOffPlaneDetection.name  {
-                // Go turnOffPlaneDetection
+            
+            let options = self.createARSessionSettingsOptions(group: option.group)
+            
+            if option.name == ARSessionSettingsOptionsKeys.detectAllPlanes.name {
+                configuration.planeDetection = [.horizontal, .vertical]
+                options.first(where: {$0.name == option.name})?.isSelected = true
+            } else if option.name == ARSessionSettingsOptionsKeys.detectHorizontalPlanesOnly.name{
+                configuration.planeDetection = [.horizontal]
+                options.first(where: {$0.name == option.name})?.isSelected = true
+            } else if option.name == ARSessionSettingsOptionsKeys.detectVerticalPlanesOnly.name  {
+                configuration.planeDetection = [.vertical]
+                options.first(where: {$0.name == option.name})?.isSelected = true
+            } else if option.name == ARSessionSettingsOptionsKeys.turnOffPlaneDetection.name  {
+                configuration.planeDetection = []
+                options.first(where: {$0.name == option.name})?.isSelected = true
+            }
+            self.arSessionVMEvent.publish(request: .returnNewOptions(options: options))
+            self.reconfigureSession(configuration: configuration)
+        }
+    }
+}
+class ARSessionVMEvent {
+    var publisherRequest: AnyPublisher<ARSessionVMEventInfo, Never> {
+        subjectRequest.eraseToAnyPublisher()
+    }
+    
+    private let subjectRequest = PassthroughSubject<ARSessionVMEventInfo, Never>()
+    
+    private(set) var request : ARSessionVMEventInfo? = nil {
+        didSet {
+            if let request = request {
+                subjectRequest.send (request)
             }
         }
     }
+    
+    func publish(request: ARSessionVMEventInfo) {
+        self.request = request
+    }
+}
+
+enum ARSessionVMEventInfo {
+    case returnNewOptions(options: [ARSessionSettingsOptions])
+}
+
+extension ARSessionVMImplement : ARSessionDelegate {
 }

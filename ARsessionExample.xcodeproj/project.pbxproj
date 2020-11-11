@@ -31,6 +31,7 @@
 		77F6C289255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */; };
 		77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */; };
 		77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C290255AC49100B1C172 /* SettingsApp.swift */; };
+		77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */ = {isa = PBXBuildFile; productRef = 77F6C299255BF0A000B1C172 /* PromiseKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +70,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				77F6C246255A9B7800B1C172 /* TinyConstraints in Frameworks */,
+				77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */,
 				2F02497E87F8E2E345B5E331 /* Pods_ARsessionExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -281,6 +283,7 @@
 			name = ARsessionExample;
 			packageProductDependencies = (
 				77F6C245255A9B7800B1C172 /* TinyConstraints */,
+				77F6C299255BF0A000B1C172 /* PromiseKit */,
 			);
 			productName = ARsessionExample;
 			productReference = 77F6C212255A97DF00B1C172 /* ARsessionExample.app */;
@@ -311,6 +314,7 @@
 			mainGroup = 77F6C209255A97DF00B1C172;
 			packageReferences = (
 				77F6C244255A9B7800B1C172 /* XCRemoteSwiftPackageReference "TinyConstraints" */,
+				77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */,
 			);
 			productRefGroup = 77F6C213255A97DF00B1C172 /* Products */;
 			projectDirPath = "";
@@ -605,6 +609,14 @@
 				minimumVersion = 4.0.1;
 			};
 		};
+		77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mxcl/PromiseKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.13.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -612,6 +624,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 77F6C244255A9B7800B1C172 /* XCRemoteSwiftPackageReference "TinyConstraints" */;
 			productName = TinyConstraints;
+		};
+		77F6C299255BF0A000B1C172 /* PromiseKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */;
+			productName = PromiseKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

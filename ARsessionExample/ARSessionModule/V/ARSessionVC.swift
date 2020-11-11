@@ -64,7 +64,7 @@ class ARSessionVC : UIViewController {
         let currentSessionOptons = self.vm.gettingCurrentSettingsFromARSession()
         
         // Create and call ARSessionSettingsVC
-        if let arSessionSettingsVC = ModulesBuilder.createArSessionSettingsModule(options: currentSessionOptons) as? ARSessionSettingsVC {
+        if let arSessionSettingsVC = ModulesBuilder.createArSessionSettingsModule(options: currentSessionOptons, arSessionVMEvent: self.vm.arSessionVMEvent) as? ARSessionSettingsVC {
             let viewNC = UINavigationController(rootViewController: arSessionSettingsVC)
             viewNC.setNavigationBarHidden(true, animated: false)
             arSessionSettingsVC.modalPresentationStyle = .popover
@@ -74,10 +74,10 @@ class ARSessionVC : UIViewController {
     }
     
     func receivingNewSettingsForARSession(options: ARSessionSettingsOptions) {
-        self.vm.receivingNewSettingsForARSession(options: options)
+        self.vm.receivingNewSettingsForARSession(option: options)
     }
 }
 
 extension ARSessionVC : ARSessionVMDelegate {
-    
+
 }

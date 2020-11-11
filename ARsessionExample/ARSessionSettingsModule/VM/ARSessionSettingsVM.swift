@@ -27,18 +27,21 @@ class ARSessionSettingsVMImplement : ARSessionSettingsVM{
     
     // MARK: Publishers and subscribers
     private var arSessionSettingsViewEvent : ARSessionSettingsViewEvent!
+    private var arSessionVMEvent : ARSessionVMEvent!
     private var arSessionSettingsViewEventSubscriber : AnyCancellable?
+    private var arSessionVMEventSubscriber : AnyCancellable?
     
     weak var delegate: ARSessionSettingsVMDelegate?
     
-    init(options : [ARSessionSettingsOptions], arSessionSettingsViewEvent: ARSessionSettingsViewEvent) {
+    init(options : [ARSessionSettingsOptions], arSessionSettingsViewEvent: ARSessionSettingsViewEvent, arSessionVMEvent : ARSessionVMEvent) {
         self.arSessionSettingsViewEvent = arSessionSettingsViewEvent
+        self.arSessionVMEvent = arSessionVMEvent
         self.currentOptionsOfSession = options
         self.subscribe()
     }
     
     deinit {
-        self.unsSubscribe()
+        self.unSubscribe()
     }
     
     func subscribe() {
@@ -46,10 +49,18 @@ class ARSessionSettingsVMImplement : ARSessionSettingsVM{
             self.delegate?.passingNewSettingsARSession(options: options)
         }
         
+        self.arSessionVMEventSubscriber = arSessionVMEvent.publisherRequest.sink{request in
+            switch request {
+            case .returnNewOptions(options: let options):
+                self.updateViewData?(.success(options: options))
+            }
+        }
+        
     }
     
-    func unsSubscribe() {
+    func unSubscribe() {
         arSessionSettingsViewEventSubscriber?.cancel()
+        arSessionVMEventSubscriber?.cancel()
     }
     
     func createLayout() -> UICollectionViewLayout {

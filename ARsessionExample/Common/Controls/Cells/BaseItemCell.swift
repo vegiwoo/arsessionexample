@@ -120,8 +120,8 @@ class BaseItemCell : UICollectionViewCell {
         uiSwitch.shouldFillOnPush = true
         uiSwitch.trackOnBorderColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
         uiSwitch.trackOnFillColor = #colorLiteral(red: 0.2392156869, green: 0.6745098233, blue: 0.9686274529, alpha: 1)
-        uiSwitch.thumbOnFillColor = .systemGray5
-        uiSwitch.thumbOffFillColor = .systemGray5
+        uiSwitch.thumbOnFillColor = .white
+        uiSwitch.thumbOffFillColor = .white
         return uiSwitch
     }
 }
