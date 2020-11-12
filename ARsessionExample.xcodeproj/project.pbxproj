@@ -32,6 +32,11 @@
 		77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */; };
 		77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C290255AC49100B1C172 /* SettingsApp.swift */; };
 		77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */ = {isa = PBXBuildFile; productRef = 77F6C299255BF0A000B1C172 /* PromiseKit */; };
+		77F6C2A1255BFAC100B1C172 /* fender.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C29D255BFAC000B1C172 /* fender.usdz */; };
+		77F6C2A2255BFAC100B1C172 /* biplane.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C29E255BFAC000B1C172 /* biplane.usdz */; };
+		77F6C2A4255BFAC100B1C172 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C2A0255BFAC100B1C172 /* robot.usdz */; };
+		77F6C2A9255C084A00B1C172 /* gramophone.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C2A8255C084A00B1C172 /* gramophone.usdz */; };
+		77F6C2AF255C3AD000B1C172 /* FocusEntity in Frameworks */ = {isa = PBXBuildFile; productRef = 77F6C2AE255C3AD000B1C172 /* FocusEntity */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +65,10 @@
 		77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionSettingsView + Constraints.swift"; sourceTree = "<group>"; };
 		77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeaderReusableView.swift; sourceTree = "<group>"; };
 		77F6C290255AC49100B1C172 /* SettingsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsApp.swift; sourceTree = "<group>"; };
+		77F6C29D255BFAC000B1C172 /* fender.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = fender.usdz; sourceTree = "<group>"; };
+		77F6C29E255BFAC000B1C172 /* biplane.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = biplane.usdz; sourceTree = "<group>"; };
+		77F6C2A0255BFAC100B1C172 /* robot.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = robot.usdz; sourceTree = "<group>"; };
+		77F6C2A8255C084A00B1C172 /* gramophone.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = gramophone.usdz; sourceTree = "<group>"; };
 		D9C91E8282AC1BB2470D09DD /* Pods-ARsessionExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARsessionExample.release.xcconfig"; path = "Target Support Files/Pods-ARsessionExample/Pods-ARsessionExample.release.xcconfig"; sourceTree = "<group>"; };
 		DC513E667B149EE87B2A4981 /* Pods_ARsessionExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ARsessionExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -69,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77F6C2AF255C3AD000B1C172 /* FocusEntity in Frameworks */,
 				77F6C246255A9B7800B1C172 /* TinyConstraints in Frameworks */,
 				77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */,
 				2F02497E87F8E2E345B5E331 /* Pods_ARsessionExample.framework in Frameworks */,
@@ -99,6 +109,7 @@
 		77F6C214255A97DF00B1C172 /* ARsessionExample */ = {
 			isa = PBXGroup;
 			children = (
+				77F6C29C255BFA8D00B1C172 /* Models */,
 				77F6C28F255AC47B00B1C172 /* Helpers */,
 				77F6C262255AB29A00B1C172 /* Common */,
 				77F6C235255A995F00B1C172 /* ARSessionModule */,
@@ -246,6 +257,17 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		77F6C29C255BFA8D00B1C172 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				77F6C2A8255C084A00B1C172 /* gramophone.usdz */,
+				77F6C29D255BFAC000B1C172 /* fender.usdz */,
+				77F6C29E255BFAC000B1C172 /* biplane.usdz */,
+				77F6C2A0255BFAC100B1C172 /* robot.usdz */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		81534953527F4C2782139773 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -284,6 +306,7 @@
 			packageProductDependencies = (
 				77F6C245255A9B7800B1C172 /* TinyConstraints */,
 				77F6C299255BF0A000B1C172 /* PromiseKit */,
+				77F6C2AE255C3AD000B1C172 /* FocusEntity */,
 			);
 			productName = ARsessionExample;
 			productReference = 77F6C212255A97DF00B1C172 /* ARsessionExample.app */;
@@ -315,6 +338,7 @@
 			packageReferences = (
 				77F6C244255A9B7800B1C172 /* XCRemoteSwiftPackageReference "TinyConstraints" */,
 				77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */,
+				77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */,
 			);
 			productRefGroup = 77F6C213255A97DF00B1C172 /* Products */;
 			projectDirPath = "";
@@ -331,7 +355,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */,
+				77F6C2A9255C084A00B1C172 /* gramophone.usdz in Resources */,
 				77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */,
+				77F6C2A4255BFAC100B1C172 /* robot.usdz in Resources */,
+				77F6C2A2255BFAC100B1C172 /* biplane.usdz in Resources */,
+				77F6C2A1255BFAC100B1C172 /* fender.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -617,6 +645,14 @@
 				minimumVersion = 6.13.3;
 			};
 		};
+		77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maxxfrazer/FocusEntity.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -629,6 +665,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */;
 			productName = PromiseKit;
+		};
+		77F6C2AE255C3AD000B1C172 /* FocusEntity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */;
+			productName = FocusEntity;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ARKit
 import RealityKit
 import TinyConstraints
 
@@ -17,18 +18,28 @@ extension ARSessionView {
         self.addSubview(self.arView)
         arView.edgesToSuperview()
         
-        self.addSubview(functionalButtonsStack)
-        self.functionalButtonsStack.addArrangedSubview(settingsButton)
+     
+        
+        //self.addSubview(functionalButtonsStack)
+        //self.functionalButtonsStack.addArrangedSubview(settingsButton)
     }
     
     func makeArView () -> ARView {
         let view = ARView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.clipsToBounds = true
-        view.isUserInteractionEnabled = false
         view.automaticallyConfigureSession = false
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         return view
+    }
+    
+    func makeCoachingOverlayView(goal: ARCoachingOverlayView.Goal) -> ARCoachingOverlayView {
+        let coachingOverlayView = ARCoachingOverlayView()
+        coachingOverlayView.translatesAutoresizingMaskIntoConstraints = false
+        coachingOverlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        coachingOverlayView.activatesAutomatically = true
+        coachingOverlayView.goal = goal
+        return coachingOverlayView
     }
     
     func makeFunctionalButton (sfSymbolName: String) -> UIButton {

@@ -4,8 +4,10 @@
 //  Created by Dmitry Samartcev on 10.11.2020.
 
 import UIKit
+import ARKit
 import RealityKit
 import Combine
+
 
 /// Class for the ArSession view
 class ARSessionView : UIView {
@@ -15,7 +17,7 @@ class ARSessionView : UIView {
             self.setNeedsLayout()
         }
     }
-    
+    var arCoachingOverlayView : ARCoachingOverlayView!
     private var arSessionViewEvent : ARSessionViewEvent!
     
     // UI cotrols
@@ -46,6 +48,13 @@ class ARSessionView : UIView {
             break
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
+            
+            self.arCoachingOverlayView = makeCoachingOverlayView(goal: .anyPlane)
+            self.arView.addSubview(arCoachingOverlayView)
+            arCoachingOverlayView.edgesToSuperview()
+            self.arView.bringSubviewToFront(self.arCoachingOverlayView)
+            self.arCoachingOverlayView.session = arSession
+            self.arCoachingOverlayView.delegate = self.arView
         }
     }
 }
@@ -73,3 +82,21 @@ class ARSessionViewEvent {
 enum ARSessionViewEventRequest {
     case hello
 }
+
+extension ARView : ARCoachingOverlayViewDelegate {
+
+    public func coachingOverlayViewDidRequestSessionReset(_ coachingOverlayView: ARCoachingOverlayView) {
+        print(coachingOverlayViewDidRequestSessionReset)
+    }
+    
+    
+    public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
+        print("coachingOverlayViewWillActivate")
+    }
+    
+    
+    public func coachingOverlayViewDidDeactivate (_ coachingOverlayView: ARCoachingOverlayView) {
+        print("coachingOverlayViewDidDeactivate")
+    }
+}
+

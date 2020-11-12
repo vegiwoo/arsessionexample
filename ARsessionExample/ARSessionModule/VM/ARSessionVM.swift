@@ -64,6 +64,9 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
         arSessionConfiguration.isCollaborationEnabled = true
         arSessionConfiguration.environmentTexturing = .automatic
         arSessionConfiguration.planeDetection = [.horizontal]
+        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+            arSessionConfiguration.sceneReconstruction = .mesh
+        }
         return arSessionConfiguration
     }
     
@@ -92,7 +95,6 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
             return planeDetectionModeOptions
         }
     }
-    
     
     func gettingCurrentSettingsFromARSession() -> [ARSessionSettingsOptions] {
  
@@ -185,4 +187,5 @@ enum ARSessionVMEventInfo {
 }
 
 extension ARSessionVMImplement : ARSessionDelegate {
+
 }
