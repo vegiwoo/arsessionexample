@@ -29,7 +29,7 @@ extension ARSessionView {
         view.clipsToBounds = true
         view.automaticallyConfigureSession = false
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.focusEntity.isEnabled = false
+        view.focusEntity.isEnabled = false        
         return view
     }
     
@@ -46,7 +46,7 @@ extension ARSessionView {
         let button = UIButton(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
         button.translatesAutoresizingMaskIntoConstraints = false
         button.backgroundColor = .clear
-        let segmentedControlSymbolsConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
+        let segmentedControlSymbolsConfig = UIImage.SymbolConfiguration(pointSize: 35, weight: .bold, scale: .default)
         let titleImage = UIImage(systemName: sfSymbolName, withConfiguration: segmentedControlSymbolsConfig)!.withTintColor(.white, renderingMode: .alwaysOriginal)
         button.setImage(titleImage, for: .normal)
         button.alpha = 0.7
@@ -167,6 +167,4 @@ extension ARSessionView {
             }
         }
     }
-
-
 }

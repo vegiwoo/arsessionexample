@@ -44,7 +44,7 @@ class ARSessionView : UIView {
     var placingButtonStack : UIStackView?
     var editingButtonStack : UIStackView?
     
-    var placingAnchorEntity : AnchorEntity? {
+    var placingModelEntity : ModelEntity? {
         willSet {
             if newValue != nil {
                 self.presentationMode = .placing
@@ -54,12 +54,16 @@ class ARSessionView : UIView {
         }
     }
     
+    var anchorEntityEditableTransform : Transform?
+    var anchorEntityEditableTranslation : SIMD3<Float>?
+    
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
         super.init(frame: frame)
         
         self.setupView()
         self.setupConstrains()
+        self.addGestures()
         
         self.presentationMode = ARSessionViewPresentationMode.initial
     }
@@ -67,6 +71,37 @@ class ARSessionView : UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    func addGestures() {
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerHandler(sender:)))
+        self.arView.addGestureRecognizer(tapRecognizer)
+    }
+    
+    @objc func tapGestureRecognizerHandler (sender: UITapGestureRecognizer) {
+
+        guard sender.view == self.arView else { fatalError()} // TODO: !! !
+
+        let entities = (sender.view as! CustomARView).entities(at: sender.location(in: sender.view))
+        if let parentEntity = entities.first as? ModelEntity,
+          // let modelEntity = parentEntity.children.first as? ModelEntity,
+           let anchorEntity = parentEntity.parent as? AnchorEntity {
+  
+            self.anchorEntityEditableTransform = parentEntity.transform
+            
+            let newTranslation = SIMD3<Float>(x: anchorEntityEditableTransform!.translation.x,
+                                              y: anchorEntityEditableTransform!.translation.y + 0.10,
+                                              z: anchorEntityEditableTransform!.translation.z)
+            let transform = Transform(scale: anchorEntityEditableTransform!.scale, rotation: anchorEntityEditableTransform!.rotation, translation: newTranslation)
+           
+            parentEntity.move(to: transform, relativeTo: parentEntity, duration: 1.0, timingFunction: .default)
+            
+           // anchorEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.5, timingFunction: .easeIn)
+            self.arView.installGestures(for: parentEntity)
+            
+            self.presentationMode = .editing
+        }
+    }
+    
     
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -84,12 +119,8 @@ class ARSessionView : UIView {
             self.arCoachingOverlayView.session = arSession
             self.arCoachingOverlayView.delegate = self.arView
         case .createSuccess(let modelEntity):
-            if self.placingAnchorEntity == nil {
-                let anchorEntity = AnchorEntity(plane: .any)
-                anchorEntity.addChild(modelEntity.clone(recursive: true))
-                modelEntity.generateCollisionShapes(recursive: true)
-                arView.installGestures([.all], for: modelEntity)
-                self.placingAnchorEntity = anchorEntity
+            if self.placingModelEntity == nil {
+                self.placingModelEntity = modelEntity
             }
         }
     }
@@ -103,14 +134,34 @@ class ARSessionView : UIView {
         self.arSessionViewEvent.publish(request: .showSettingsPage)
     }
     @objc func successButtonPlacing (sender: UIButton) {
-        if let placingAnchorEntity = self.placingAnchorEntity {
-            self.arView.scene.addAnchor(placingAnchorEntity.clone(recursive: true))
-            self.placingAnchorEntity = nil
+        if let placingModelEntity = self.placingModelEntity {
+
+            let uuidString = UUID().uuidString
+        
+            // parentEntiry
+            let parentEntity = ModelEntity()
+            parentEntity.name = "parentEntity-\(uuidString)"
+            parentEntity.addChild(placingModelEntity)
+ 
+            // add collision
+            let entityBounds = placingModelEntity.visualBounds(relativeTo: parentEntity)
+            parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateBox(size: entityBounds.extents).offsetBy(translation: entityBounds.center)])
+ 
+            // anchorEntity
+            let anchorEntity = AnchorEntity(plane: .any)
+            anchorEntity.name = "anchorEntity-\(uuidString)"
+            anchorEntity.addChild(parentEntity)
+
+            // placing
+            //self.arView.installGestures([.all], for: parentEntity)
+            self.arView.scene.addAnchor(anchorEntity)
+
+            self.placingModelEntity = nil
             self.viewData = .initial
         }
     }
     @objc func cancelButtonPlacing (sender: UIButton) {
-        self.placingAnchorEntity = nil
+        self.placingModelEntity = nil
         self.viewData = .initial
     }
 }
