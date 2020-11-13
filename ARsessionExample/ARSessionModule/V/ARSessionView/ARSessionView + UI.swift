@@ -37,7 +37,7 @@ extension ARSessionView {
         let coachingOverlayView = ARCoachingOverlayView()
         coachingOverlayView.translatesAutoresizingMaskIntoConstraints = false
         coachingOverlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        coachingOverlayView.activatesAutomatically = false
+        coachingOverlayView.activatesAutomatically = true
         coachingOverlayView.goal = goal
         return coachingOverlayView
     }
@@ -160,7 +160,11 @@ extension ARSessionView {
                     if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
                     
                     // buttons targets
-                    // ...
+                    self.succsessButton.removeTarget(nil, action: nil, for: .allEvents)
+                    self.succsessButton.addTarget(self, action: #selector(self.successButtonEditing(sender:)), for: .touchUpInside)
+                    
+                    self.trashButton.removeTarget(nil, action: nil, for: .allEvents)
+                    self.trashButton.addTarget(self, action: #selector(self.trashButtonEditing(sender:)), for: .touchUpInside)
                 }
             case .none:
                 break

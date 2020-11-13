@@ -54,8 +54,17 @@ class ARSessionView : UIView {
         }
     }
     
+    // vars for edit model
+    var anchorEntityEditable : AnchorEntity?
+
     var anchorEntityEditableTransform : Transform?
     var anchorEntityEditableTranslation : SIMD3<Float>?
+    
+    // animating
+    var deletingMoving : AnimationPlaybackController!
+    var deletingMovingcomplete : AnyCancellable?
+    var editingMoving : AnimationPlaybackController!
+    var editingComplete : AnyCancellable?
     
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -76,32 +85,6 @@ class ARSessionView : UIView {
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerHandler(sender:)))
         self.arView.addGestureRecognizer(tapRecognizer)
     }
-    
-    @objc func tapGestureRecognizerHandler (sender: UITapGestureRecognizer) {
-
-        guard sender.view == self.arView else { fatalError()} // TODO: !! !
-
-        let entities = (sender.view as! CustomARView).entities(at: sender.location(in: sender.view))
-        if let parentEntity = entities.first as? ModelEntity,
-          // let modelEntity = parentEntity.children.first as? ModelEntity,
-           let anchorEntity = parentEntity.parent as? AnchorEntity {
-  
-            self.anchorEntityEditableTransform = parentEntity.transform
-            
-            let newTranslation = SIMD3<Float>(x: anchorEntityEditableTransform!.translation.x,
-                                              y: anchorEntityEditableTransform!.translation.y + 0.10,
-                                              z: anchorEntityEditableTransform!.translation.z)
-            let transform = Transform(scale: anchorEntityEditableTransform!.scale, rotation: anchorEntityEditableTransform!.rotation, translation: newTranslation)
-           
-            parentEntity.move(to: transform, relativeTo: parentEntity, duration: 1.0, timingFunction: .default)
-            
-           // anchorEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.5, timingFunction: .easeIn)
-            self.arView.installGestures(for: parentEntity)
-            
-            self.presentationMode = .editing
-        }
-    }
-    
     
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -125,14 +108,47 @@ class ARSessionView : UIView {
         }
     }
     
-    // Button handlers
+    // MARK: Action handlers
+    /// Tap handler for an existing model to start editing it.
+    /// - Parameter sender: UITapGestureRecognizer as sender.
+    @objc func tapGestureRecognizerHandler (sender: UITapGestureRecognizer) {
+
+        guard sender.view == self.arView else { fatalError()} // TODO: !! !
+
+        let entities = (sender.view as! CustomARView).entities(at: sender.location(in: sender.view))
+        if let parentEntity = entities.first as? ModelEntity,
+           //let modelEntity = parentEntity.children.first as? ModelEntity,
+           let anchorEntity = parentEntity.parent as? AnchorEntity {
+  
+            self.anchorEntityEditable = anchorEntity
+
+            let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
+                                              y: parentEntity.transform.translation.y + 0.10,
+                                              z: parentEntity.transform.translation.z)
+            let transform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
+           
+            parentEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.8, timingFunction: .easeIn)
+            self.arView.installGestures(for: parentEntity)
+            
+            self.presentationMode = .editing
+        }
+    }
+    
+    /// Tap handler for modelButton and publish '.createModelEntityFromFile' request.
+    /// - Parameter sender: UIButton as sender.
     @objc func modelButtonTapHandler(sender: UIButton) {
         self.arSessionViewEvent.publish(request: .createModelEntityFromFile)
         
     }
+    
+    /// Tap handler for settingsButton and publish '.showSettingsPage' request.
+    /// - Parameter sender: UIButton as sender.
     @objc func settingsButtonTapHandler(sender: UIButton) {
         self.arSessionViewEvent.publish(request: .showSettingsPage)
     }
+    
+    /// Tap handler for successButton and placing new model on scene.
+    /// - Parameter sender:  UIButton as sender.
     @objc func successButtonPlacing (sender: UIButton) {
         if let placingModelEntity = self.placingModelEntity {
 
@@ -153,16 +169,82 @@ class ARSessionView : UIView {
             anchorEntity.addChild(parentEntity)
 
             // placing
-            //self.arView.installGestures([.all], for: parentEntity)
+            let targetTransform = parentEntity.transform
+            
+            let newTransform = Transform(scale: SIMD3<Float>(repeating: 0.00), rotation: targetTransform.rotation, translation: targetTransform.translation)
+            parentEntity.transform = newTransform
+  
             self.arView.scene.addAnchor(anchorEntity)
-
+            
+            parentEntity.move(to: targetTransform, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
+ 
             self.placingModelEntity = nil
             self.viewData = .initial
         }
     }
+    
+    /// Tap handler on cancelButton when canceling model placement.
+    /// - Parameter sender: UIButton as sender.
     @objc func cancelButtonPlacing (sender: UIButton) {
         self.placingModelEntity = nil
         self.viewData = .initial
+    }
+    
+    /// Tap handler on successButton when model is finished editing.
+    /// - Parameter sender: UIButton as sender.
+    @objc func successButtonEditing (sender: UIButton) {
+        
+        if self.anchorEntityEditable != nil,
+           let parentEntity = self.anchorEntityEditable!.children.first as? ModelEntity {
+            
+            let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
+                                              y: parentEntity.transform.translation.y - 0.10,
+                                              z: parentEntity.transform.translation.z)
+
+            let newTransformform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
+
+            self.editingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable!, duration: 0.8, timingFunction: .easeInOut)
+            
+            self.editingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+                .filter{$0.playbackController == self.editingMoving}
+                .sink{ _ in
+                    // remove gestureRecognizers using filter RealityKit.EntityTranslationGestureRecognizer
+                    if let entitiesGesures = self.arView.gestureRecognizers?.filter({$0 is RealityKit.EntityTranslationGestureRecognizer}), entitiesGesures.count > 0 {
+                        entitiesGesures.forEach {gesture in
+                            self.arView.removeGestureRecognizer(gesture)
+                        }
+                    }
+                    self.anchorEntityEditable = nil
+                    self.presentationMode = .initial
+                }
+        }
+    }
+    
+    /// Tap handler on trashButton - animation and model deletion
+    /// - Parameter sender: UIButton as sender.
+    @objc func trashButtonEditing (sender: UIButton) {
+
+        if let anchorEnity = self.anchorEntityEditable,
+           let parentEntity = anchorEnity.children.first as? ModelEntity {
+            
+            let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
+                                              y: parentEntity.transform.translation.y - 0.10,
+                                              z: parentEntity.transform.translation.z)
+            let newScale = SIMD3<Float>(x: 0.00, y: 0.00, z: 0.00)
+            
+            // define and start animation before deleting the model
+            deletingMoving = parentEntity.move(to: Transform(scale:newScale, rotation: parentEntity.transform.rotation, translation: newTranslation), relativeTo: parentEntity, duration: 0.3, timingFunction: .easeOut)
+
+            // subscribe to animation end event before deleting model, deleting
+            deletingMovingcomplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+                .filter{$0.playbackController == self.deletingMoving}
+                .sink{ _ in
+                    self.arView.scene.anchors.remove(anchorEnity)
+                    self.deletingMoving = nil
+                    self.deletingMovingcomplete?.cancel()
+                    self.presentationMode = .initial
+                }
+        }
     }
 }
 
