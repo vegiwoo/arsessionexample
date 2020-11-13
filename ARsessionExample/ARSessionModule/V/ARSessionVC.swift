@@ -315,12 +315,16 @@ class ARSessionVC : UIViewController {
     }
     
     fileprivate func addTargets() {
-        self.arSessionView.settingsButton.addTarget(self, action: #selector(settingsButtonTapHandler), for: .touchUpInside)
+        // ... 
     }
     
-    // MARK: Action handlers
-    @objc fileprivate func settingsButtonTapHandler(sender: UIButton) {
-        
+    func receivingNewSettingsForARSession(options: ARSessionSettingsOptions) {
+        self.vm.receivingNewSettingsForARSession(option: options)
+    }
+}
+
+extension ARSessionVC : ARSessionVMDelegate {
+    func showSettingsPage() {
         // Get the current settings for ARSession
         let currentSessionOptons = self.vm.gettingCurrentSettingsFromARSession()
         
@@ -333,14 +337,6 @@ class ARSessionVC : UIViewController {
             present(viewNC, animated: true, completion: nil)
         }
     }
-    
-    func receivingNewSettingsForARSession(options: ARSessionSettingsOptions) {
-        self.vm.receivingNewSettingsForARSession(option: options)
-    }
-}
-
-extension ARSessionVC : ARSessionVMDelegate {
-
 }
 
 //struct ARSessionVC_Previews: PreviewProvider {

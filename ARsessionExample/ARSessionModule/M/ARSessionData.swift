@@ -7,8 +7,10 @@
 
 import Foundation
 import ARKit
+import RealityKit
 
 enum ARSessionData {
     case initial
     case linkTo(arSession: ARSession)
+    case createSuccess(modelEntity: ModelEntity)
 }

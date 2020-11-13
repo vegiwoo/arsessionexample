@@ -7,10 +7,14 @@ import UIKit
 import ARKit
 import RealityKit
 import Combine
-
+import FocusEntity
 
 /// Class for the ArSession view
 class ARSessionView : UIView {
+    
+    enum ARSessionViewPresentationMode {
+        case initial, placing, editing
+    }
     
     var viewData: ARSessionData = .initial {
         didSet {
@@ -18,13 +22,37 @@ class ARSessionView : UIView {
         }
     }
     var arCoachingOverlayView : ARCoachingOverlayView!
-    private var arSessionViewEvent : ARSessionViewEvent!
+    var arSessionViewEvent : ARSessionViewEvent!
     
     // UI cotrols
-    lazy var arView : ARView = self.makeArView()
+    lazy var arView : CustomARView = self.makeArView()
+    // - Buttons
+    lazy var modelButton    : UIButton = makeFunctionalButton(sfSymbolName: "cube.fill")
     lazy var settingsButton : UIButton = makeFunctionalButton(sfSymbolName: "gear")
+    lazy var succsessButton : UIButton = makeFunctionalButton(sfSymbolName: "checkmark.circle.fill")
+    lazy var canceledButton : UIButton = makeFunctionalButton(sfSymbolName: "xmark.circle.fill")
+    lazy var trashButton    : UIButton = makeFunctionalButton(sfSymbolName: "trash.circle.fill")
     
-    lazy var functionalButtonsStack : UIStackView = makeFunctionalButtonsStack()
+    var presentationMode : ARSessionViewPresentationMode! {
+        willSet {
+            if newValue != nil {
+                self.changingStackFunctionality()
+            }
+        }
+    }
+    var initialButtonStack : UIStackView?
+    var placingButtonStack : UIStackView?
+    var editingButtonStack : UIStackView?
+    
+    var placingAnchorEntity : AnchorEntity? {
+        willSet {
+            if newValue != nil {
+                self.presentationMode = .placing
+            } else {
+                self.presentationMode = .initial
+            }
+        }
+    }
     
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -33,7 +61,7 @@ class ARSessionView : UIView {
         self.setupView()
         self.setupConstrains()
         
-        self.viewData = .initial
+        self.presentationMode = ARSessionViewPresentationMode.initial
     }
     
     required init?(coder: NSCoder) {
@@ -45,17 +73,45 @@ class ARSessionView : UIView {
         
         switch viewData {
         case .initial:
+            print("DEBUG: ARSessionView viewData initial - \(Date())")
             break
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
-            
             self.arCoachingOverlayView = makeCoachingOverlayView(goal: .anyPlane)
             self.arView.addSubview(arCoachingOverlayView)
             arCoachingOverlayView.edgesToSuperview()
             self.arView.bringSubviewToFront(self.arCoachingOverlayView)
             self.arCoachingOverlayView.session = arSession
             self.arCoachingOverlayView.delegate = self.arView
+        case .createSuccess(let modelEntity):
+            if self.placingAnchorEntity == nil {
+                let anchorEntity = AnchorEntity(plane: .any)
+                anchorEntity.addChild(modelEntity.clone(recursive: true))
+                modelEntity.generateCollisionShapes(recursive: true)
+                arView.installGestures([.all], for: modelEntity)
+                self.placingAnchorEntity = anchorEntity
+            }
         }
+    }
+    
+    // Button handlers
+    @objc func modelButtonTapHandler(sender: UIButton) {
+        self.arSessionViewEvent.publish(request: .createModelEntityFromFile)
+        
+    }
+    @objc func settingsButtonTapHandler(sender: UIButton) {
+        self.arSessionViewEvent.publish(request: .showSettingsPage)
+    }
+    @objc func successButtonPlacing (sender: UIButton) {
+        if let placingAnchorEntity = self.placingAnchorEntity {
+            self.arView.scene.addAnchor(placingAnchorEntity.clone(recursive: true))
+            self.placingAnchorEntity = nil
+            self.viewData = .initial
+        }
+    }
+    @objc func cancelButtonPlacing (sender: UIButton) {
+        self.placingAnchorEntity = nil
+        self.viewData = .initial
     }
 }
 
@@ -80,23 +136,45 @@ class ARSessionViewEvent {
 }
 
 enum ARSessionViewEventRequest {
-    case hello
+    case createModelEntityFromFile
+    case showSettingsPage 
 }
 
-extension ARView : ARCoachingOverlayViewDelegate {
+extension CustomARView : ARCoachingOverlayViewDelegate {
 
-    public func coachingOverlayViewDidRequestSessionReset(_ coachingOverlayView: ARCoachingOverlayView) {
-        print(coachingOverlayViewDidRequestSessionReset)
-    }
-    
-    
     public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
-        print("coachingOverlayViewWillActivate")
+        // Do something
     }
     
     
     public func coachingOverlayViewDidDeactivate (_ coachingOverlayView: ARCoachingOverlayView) {
-        print("coachingOverlayViewDidDeactivate")
+        // Do something
     }
 }
 
+extension CustomARView : FocusEntityDelegate {
+    public func toTrackingState() {
+        // Do something
+    }
+    
+    public func toInitializingState() {
+        // Do something
+    }
+}
+
+class CustomARView : ARView {
+    var focusEntity : FocusEntity!
+    
+    var meshResource : MeshResource!
+
+    required init(frame frameRect: CGRect) {
+        super.init(frame: frameRect)
+        focusEntity = FocusEntity(on: self, style: .classic)
+        focusEntity.delegate = self
+        focusEntity.setAutoUpdate(to: true)
+    }
+    
+    @objc required dynamic init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}

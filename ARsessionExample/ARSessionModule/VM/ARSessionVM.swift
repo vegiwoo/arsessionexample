@@ -4,12 +4,13 @@
 
 import Foundation
 import ARKit
+import RealityKit
 import Combine
 import PromiseKit
 
 /// Class for ArSession view model delegate.
 protocol ARSessionVMDelegate : class {
-    // ...
+    func showSettingsPage()
 }
 
 /// Class for ArSession view model protocol.
@@ -37,6 +38,7 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     fileprivate var arSessionViewEvent: ARSessionViewEvent!
     fileprivate var arSessionViewEventSubscriber: AnyCancellable?
     var arSessionVMEvent : ARSessionVMEvent!
+    fileprivate var modelEntityLoadAsyncSubscriber : AnyCancellable?
     
     init(arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -49,8 +51,25 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     func subscribe() {
         self.arSessionViewEventSubscriber = arSessionViewEvent.publisherRequest.sink{request in
             switch request {
-            case .hello:
-                print ("Say hello from ARSessionVMImplement")
+            case .createModelEntityFromFile:
+                guard let path = Bundle.main.resourcePath, let files = try? FileManager.default.contentsOfDirectory(atPath: path) else { fatalError()} //TODO !!!
+                if let fileName = files.first(where: {$0.hasSuffix("usdz")}) {
+                    let modelName = fileName.replacingOccurrences(of: ".usdz", with: "")
+
+                    self.modelEntityLoadAsyncSubscriber = ModelEntity.loadModelAsync(named: fileName)
+                        .sink(receiveCompletion: { complition in
+                            switch complition {
+                            case .finished:
+                                print("DEBUG: Model success load with name \(modelName)")
+                            case .failure(let error):
+                                print("DEBUG: Model \(modelName) load with error \(error.localizedDescription)")
+                            }
+                        }, receiveValue: { modelEntity in
+                            self.updateViewData?(.createSuccess(modelEntity: modelEntity))
+                        })
+                }
+            case .showSettingsPage:
+                self.delegate?.showSettingsPage()
             }
         }
     }

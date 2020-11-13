@@ -11,7 +11,7 @@ import Foundation
 extension ARSessionView {
     
     func setupConstrains() {
-        // buttonsStack
-//        functionalButtonsStack.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 15, bottom: 15, right: 15), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
+        // ...
+        
     }
 }
