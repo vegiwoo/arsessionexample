@@ -25,7 +25,7 @@ class ARSessionView : UIView {
     var arSessionViewEvent : ARSessionViewEvent!
     
     // UI cotrols
-    lazy var arView : CustomARView = self.makeArView()
+    lazy var arView : ARView = self.makeArView()
     // - Buttons
     lazy var modelButton    : UIButton = makeFunctionalButton(sfSymbolName: "cube.fill")
     lazy var settingsButton : UIButton = makeFunctionalButton(sfSymbolName: "gear")
@@ -66,6 +66,26 @@ class ARSessionView : UIView {
     var editingMoving : AnimationPlaybackController!
     var editingComplete : AnyCancellable?
     
+    // target shape
+    var detectPlacementPointForTargetShape: Bool! {
+        didSet {
+            if detectPlacementPointForTargetShape == false {
+                self.deleteteTargetShape()
+            }
+        }
+    }
+    var targetShapeWorldTransform : simd_float4x4? {
+        willSet {
+            if let newValue = newValue {
+                self.changesToTargetShape(transform: newValue)
+            }
+        }
+    }
+    var targetShape : AnchorEntity?
+    var deletingTargetShapeMoving: AnimationPlaybackController!
+    var deletingTargetShapeMovingComplete : AnyCancellable?
+
+    // init
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
         super.init(frame: frame)
@@ -73,8 +93,9 @@ class ARSessionView : UIView {
         self.setupView()
         self.setupConstrains()
         self.addGestures()
-        
+    
         self.presentationMode = ARSessionViewPresentationMode.initial
+        self.detectPlacementPointForTargetShape = false
     }
     
     required init?(coder: NSCoder) {
@@ -95,6 +116,7 @@ class ARSessionView : UIView {
             break
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
+            self.arView.session.delegate = self
             self.arCoachingOverlayView = makeCoachingOverlayView(goal: .anyPlane)
             self.arView.addSubview(arCoachingOverlayView)
             arCoachingOverlayView.edgesToSuperview()
@@ -115,7 +137,7 @@ class ARSessionView : UIView {
 
         guard sender.view == self.arView else { fatalError()} // TODO: !! !
 
-        let entities = (sender.view as! CustomARView).entities(at: sender.location(in: sender.view))
+        let entities = (sender.view as! ARView).entities(at: sender.location(in: sender.view))
         if let parentEntity = entities.first as? ModelEntity,
            //let modelEntity = parentEntity.children.first as? ModelEntity,
            let anchorEntity = parentEntity.parent as? AnchorEntity {
@@ -246,6 +268,70 @@ class ARSessionView : UIView {
                 }
         }
     }
+    
+    func changesToTargetShape(transform: simd_float4x4) {
+        if self.targetShape == nil { self.targetShape = makeTargetShape()}
+        if !self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
+            self.targetShape!.move(to: transform, relativeTo: nil)
+            self.arView.scene.addAnchor(self.targetShape!)
+        } else {
+            self.targetShape!.move(to: transform, relativeTo: nil, duration: 0.4, timingFunction: .easeOut)
+        }
+    }
+
+    func makeTargetShape() -> AnchorEntity {
+
+        var material : UnlitMaterial!
+        var texture : TextureResource?
+
+        do {
+            if let textureURL = Bundle.main.url(forResource: "targetShapeTexture_001", withExtension: "png") {
+                texture = try TextureResource.load(contentsOf: textureURL)
+
+                
+            }
+        } catch  {
+            print("\(error.localizedDescription)")
+        }
+        
+        // material
+        if let texture = texture {
+            material = UnlitMaterial()
+            material!.baseColor = .texture(texture)
+            material!.tintColor = UIColor(red: 25, green: 25, blue: 25, alpha: 0.5)
+        } else {
+            material = UnlitMaterial()
+            material.baseColor = .color(.red)
+        }
+    
+        // modelEntity
+        let mesh = MeshResource.generatePlane(width: 0.3, depth: 0.3, cornerRadius: 2)
+        
+        let modelEntity = ModelEntity(mesh: mesh, materials: [material])
+        modelEntity.name = "targetShape_modelEntity"
+        // anchorEntity
+        let anchorEntity = AnchorEntity(plane: .any)
+        anchorEntity.addChild(modelEntity)
+        anchorEntity.name = "anchorEntity"
+        return anchorEntity
+    }
+    
+    func deleteteTargetShape() {
+        if self.targetShape != nil {
+            if self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
+                self.deletingTargetShapeMoving = self.targetShape!.move(to: Transform(scale:SIMD3<Float>(repeating: 0.00), rotation:  self.targetShape!.transform.rotation, translation:  self.targetShape!.transform.translation), relativeTo: self.targetShape!, duration: 0.3, timingFunction: .easeOut)
+                
+                self.deletingTargetShapeMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+                    .filter{$0.playbackController == self.deletingTargetShapeMoving}
+                    .sink{ _ in
+                        self.arView.scene.anchors.remove(self.targetShape!)
+                        self.targetShape = nil
+                        self.deletingTargetShapeMoving = nil
+                        self.deletingTargetShapeMovingComplete?.cancel()
+                    }
+            }
+        }
+    }
 }
 
 class ARSessionViewEvent {
@@ -273,7 +359,24 @@ enum ARSessionViewEventRequest {
     case showSettingsPage 
 }
 
-extension CustomARView : ARCoachingOverlayViewDelegate {
+
+extension ARSessionView : ARSessionDelegate {
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        if detectPlacementPointForTargetShape {
+            
+            // Center point of self.arView
+            let location = self.arView.center
+            
+            let raycast = self.arView.raycast(from: location, allowing: .existingPlaneGeometry, alignment: .any)
+            
+            if let worldTransform = raycast.first?.worldTransform {
+                self.targetShapeWorldTransform = worldTransform
+            }
+        }
+    }
+}
+
+extension ARView : ARCoachingOverlayViewDelegate {
 
     public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
         // Do something
@@ -296,13 +399,13 @@ extension CustomARView : FocusEntityDelegate {
 }
 
 class CustomARView : ARView {
+    
     var focusEntity : FocusEntity!
     
-    var meshResource : MeshResource!
-
     required init(frame frameRect: CGRect) {
         super.init(frame: frameRect)
-        focusEntity = FocusEntity(on: self, style: .classic)
+
+        focusEntity =  FocusEntity(on: self, style: .classic(color: .red))
         focusEntity.delegate = self
         focusEntity.setAutoUpdate(to: true)
     }

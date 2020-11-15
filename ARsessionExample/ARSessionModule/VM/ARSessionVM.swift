@@ -29,7 +29,6 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     var updateViewData: ((ARSessionData) -> ())?
     var delegate: ARSessionVMDelegate?
     
-    
     // ArSession
     fileprivate var arSession : ARSession?
     fileprivate var arSessionConfiguration : ARWorldTrackingConfiguration?
@@ -94,7 +93,6 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
         self.arSession = ARSession()
         self.arSession!.run(self.arSessionConfiguration!, options: [.removeExistingAnchors, .resetTracking])
         UIApplication.shared.isIdleTimerDisabled = true
-        self.arSession?.delegate = self
         self.updateViewData?(.linkTo(arSession: self.arSession!))
     }
 
@@ -181,6 +179,7 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
         }
     }
 }
+
 class ARSessionVMEvent {
     var publisherRequest: AnyPublisher<ARSessionVMEventInfo, Never> {
         subjectRequest.eraseToAnyPublisher()
@@ -203,8 +202,4 @@ class ARSessionVMEvent {
 
 enum ARSessionVMEventInfo {
     case returnNewOptions(options: [ARSessionSettingsOptions])
-}
-
-extension ARSessionVMImplement : ARSessionDelegate {
-
 }

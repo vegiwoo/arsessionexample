@@ -22,14 +22,15 @@ extension ARSessionView {
         changingStackFunctionality()
     }
     
-    func makeArView () -> CustomARView {
+    func makeArView () -> ARView {
     
-        let view = CustomARView(frame: .zero)
+        //let view = CustomARView(frame: .zero)
+        let view = ARView(frame: .zero)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.clipsToBounds = true
         view.automaticallyConfigureSession = false
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.focusEntity.isEnabled = false        
+        //view.focusEntity.isEnabled = false
         return view
     }
     
@@ -77,6 +78,9 @@ extension ARSessionView {
             //Filling  stack
             switch self.presentationMode {
             case .initial:
+                
+                self.detectPlacementPointForTargetShape = false
+                
                 UIView.animate(withDuration: 0.7) {
                     
                     placingButtonStackEdgesToSuperview?.deActivate()
@@ -97,7 +101,7 @@ extension ARSessionView {
                     initialButtonStackEdgesToSuperview = self.initialButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
                     
                     // focusEntity
-                    if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
+                    //if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
                     
                     // buttons targets
                     // modelButton
@@ -109,6 +113,9 @@ extension ARSessionView {
                     self.settingsButton.addTarget(self, action: #selector(self.settingsButtonTapHandler), for: .touchUpInside)
                 }
             case .placing:
+                
+                self.detectPlacementPointForTargetShape = true
+                
                 UIView.animate(withDuration: 0.7) {
                     initialButtonStackEdgesToSuperview?.deActivate()
                     editingButtonStackEdgesToSuperview?.deActivate()
@@ -127,8 +134,8 @@ extension ARSessionView {
                     placingButtonStackEdgesToSuperview =  self.placingButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
                     
                     // focusEntity
-                    if !self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
-                    
+                    //if !self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
+
                     // buttons targets
                     // succsessButton
                     self.succsessButton.removeTarget(nil, action: nil, for: .allEvents)
@@ -139,6 +146,9 @@ extension ARSessionView {
                 }
 
             case .editing:
+                
+                self.detectPlacementPointForTargetShape = false
+                
                 UIView.animate(withDuration: 0.7) {
                     initialButtonStackEdgesToSuperview?.deActivate()
                     placingButtonStackEdgesToSuperview?.deActivate()
@@ -157,7 +167,7 @@ extension ARSessionView {
                     editingButtonStackEdgesToSuperview = self.editingButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
                     
                     // focusEntity
-                    if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
+                    //if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
                     
                     // buttons targets
                     self.succsessButton.removeTarget(nil, action: nil, for: .allEvents)

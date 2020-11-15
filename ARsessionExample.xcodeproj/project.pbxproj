@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2F02497E87F8E2E345B5E331 /* Pods_ARsessionExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC513E667B149EE87B2A4981 /* Pods_ARsessionExample.framework */; };
+		77D6AB4125612587004DCCFA /* float4x4 + Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D6AB4025612587004DCCFA /* float4x4 + Ext.swift */; };
+		77D6AB5325617EE0004DCCFA /* targetShapeTexture_001.png in Resources */ = {isa = PBXBuildFile; fileRef = 77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */; };
 		77F6C216255A97DF00B1C172 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C215255A97DF00B1C172 /* AppDelegate.swift */; };
 		77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C21E255A97E200B1C172 /* Assets.xcassets */; };
 		77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C220255A97E200B1C172 /* LaunchScreen.storyboard */; };
@@ -38,6 +40,8 @@
 
 /* Begin PBXFileReference section */
 		25840910A75401B75CD4CA95 /* Pods-ARsessionExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARsessionExample.debug.xcconfig"; path = "Target Support Files/Pods-ARsessionExample/Pods-ARsessionExample.debug.xcconfig"; sourceTree = "<group>"; };
+		77D6AB4025612587004DCCFA /* float4x4 + Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "float4x4 + Ext.swift"; sourceTree = "<group>"; };
+		77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = targetShapeTexture_001.png; sourceTree = "<group>"; };
 		77F6C212255A97DF00B1C172 /* ARsessionExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARsessionExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77F6C215255A97DF00B1C172 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77F6C21E255A97E200B1C172 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -82,6 +86,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		77D6AB3F25612570004DCCFA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				77D6AB4025612587004DCCFA /* float4x4 + Ext.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		77D6AB4E256178C0004DCCFA /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */,
+			);
+			path = Files;
+			sourceTree = "<group>";
+		};
 		77F6C209255A97DF00B1C172 = {
 			isa = PBXGroup;
 			children = (
@@ -103,26 +123,28 @@
 		77F6C214255A97DF00B1C172 /* ARsessionExample */ = {
 			isa = PBXGroup;
 			children = (
+				77D6AB4E256178C0004DCCFA /* Files */,
 				77F6C29C255BFA8D00B1C172 /* Models */,
 				77F6C28F255AC47B00B1C172 /* Helpers */,
 				77F6C262255AB29A00B1C172 /* Common */,
 				77F6C235255A995F00B1C172 /* ARSessionModule */,
 				77F6C254255AB06F00B1C172 /* ARSessionSettingsModule */,
-				77F6C230255A98FE00B1C172 /* HelpeCode */,
+				77F6C230255A98FE00B1C172 /* HelperCode */,
 				77F6C220255A97E200B1C172 /* LaunchScreen.storyboard */,
 				77F6C22B255A983000B1C172 /* ModulesBuilder.swift */,
 			);
 			path = ARsessionExample;
 			sourceTree = "<group>";
 		};
-		77F6C230255A98FE00B1C172 /* HelpeCode */ = {
+		77F6C230255A98FE00B1C172 /* HelperCode */ = {
 			isa = PBXGroup;
 			children = (
+				77D6AB3F25612570004DCCFA /* Extensions */,
 				77F6C215255A97DF00B1C172 /* AppDelegate.swift */,
 				77F6C21E255A97E200B1C172 /* Assets.xcassets */,
 				77F6C223255A97E200B1C172 /* Info.plist */,
 			);
-			path = HelpeCode;
+			path = HelperCode;
 			sourceTree = "<group>";
 		};
 		77F6C235255A995F00B1C172 /* ARSessionModule */ = {
@@ -347,6 +369,7 @@
 			files = (
 				77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */,
 				77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */,
+				77D6AB5325617EE0004DCCFA /* targetShapeTexture_001.png in Resources */,
 				77F6C2A1255BFAC100B1C172 /* fender.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -401,6 +424,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */,
+				77D6AB4125612587004DCCFA /* float4x4 + Ext.swift in Sources */,
 				77F6C216255A97DF00B1C172 /* AppDelegate.swift in Sources */,
 				77F6C278255AB94900B1C172 /* ItemCellNoImageWithSwitch.swift in Sources */,
 				77F6C249255A9DCB00B1C172 /* ARSessionView + UI.swift in Sources */,
@@ -561,7 +585,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5L7VM52GRP;
-				INFOPLIST_FILE = ARsessionExample/HelpeCode/Info.plist;
+				INFOPLIST_FILE = ARsessionExample/HelperCode/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -581,7 +605,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5L7VM52GRP;
-				INFOPLIST_FILE = ARsessionExample/HelpeCode/Info.plist;
+				INFOPLIST_FILE = ARsessionExample/HelperCode/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
