@@ -22,15 +22,13 @@ extension ARSessionView {
         changingStackFunctionality()
     }
     
-    func makeArView () -> ARView {
-    
-        //let view = CustomARView(frame: .zero)
-        let view = ARView(frame: .zero)
+    func makeArView () -> CustomARView {
+        let view = CustomARView(frame: .zero)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.clipsToBounds = true
         view.automaticallyConfigureSession = false
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        //view.focusEntity.isEnabled = false
+        view.focusEntity.isEnabled = true
         return view
     }
     

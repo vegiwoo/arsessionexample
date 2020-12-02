@@ -25,7 +25,7 @@ class ARSessionView : UIView {
     var arSessionViewEvent : ARSessionViewEvent!
     
     // UI cotrols
-    lazy var arView : ARView = self.makeArView()
+    lazy var arView : CustomARView = self.makeArView()
     // - Buttons
     lazy var modelButton    : UIButton = makeFunctionalButton(sfSymbolName: "cube.fill")
     lazy var settingsButton : UIButton = makeFunctionalButton(sfSymbolName: "gear")
@@ -63,28 +63,34 @@ class ARSessionView : UIView {
     // animating
     var deletingMoving : AnimationPlaybackController!
     var deletingMovingcomplete : AnyCancellable?
-    var editingMoving : AnimationPlaybackController!
-    var editingComplete : AnyCancellable?
+    var startEditingMoving: AnimationPlaybackController!
+    var startEditingMovingComplete: AnyCancellable?
+    var endEditingMoving : AnimationPlaybackController!
+    var endEditingMovingComplete : AnyCancellable?
     
     // target shape
     var detectPlacementPointForTargetShape: Bool! {
         didSet {
             if detectPlacementPointForTargetShape == false {
-                self.deleteteTargetShape()
+                //self.deleteteTargetShape()
             }
         }
     }
     var targetShapeWorldTransform : simd_float4x4? {
         willSet {
             if let newValue = newValue {
-                self.changesToTargetShape(transform: newValue)
+                //self.changesToTargetShape(transform: newValue)
             }
         }
     }
-    var targetShape : AnchorEntity?
-    var deletingTargetShapeMoving: AnimationPlaybackController!
-    var deletingTargetShapeMovingComplete : AnyCancellable?
+    //var targetShape : AnchorEntity?
+    //var deletingTargetShapeMoving: AnimationPlaybackController!
+    //var deletingTargetShapeMovingComplete : AnyCancellable?
 
+    // levitation
+    var baseLevitationPoint: SIMD3<Float>?
+
+    
     // init
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -92,19 +98,16 @@ class ARSessionView : UIView {
         
         self.setupView()
         self.setupConstrains()
-        self.addGestures()
     
         self.presentationMode = ARSessionViewPresentationMode.initial
         self.detectPlacementPointForTargetShape = false
+        
+        // setup gesture recognizers
+        self.makeScreenUITapGestureRecognizers()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    func addGestures() {
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapGestureRecognizerHandler(sender:)))
-        self.arView.addGestureRecognizer(tapRecognizer)
     }
     
     override func layoutSubviews() {
@@ -139,7 +142,6 @@ class ARSessionView : UIView {
 
         let entities = (sender.view as! ARView).entities(at: sender.location(in: sender.view))
         if let parentEntity = entities.first as? ModelEntity,
-           //let modelEntity = parentEntity.children.first as? ModelEntity,
            let anchorEntity = parentEntity.parent as? AnchorEntity {
   
             self.anchorEntityEditable = anchorEntity
@@ -149,10 +151,18 @@ class ARSessionView : UIView {
                                               z: parentEntity.transform.translation.z)
             let transform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
            
-            parentEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.8, timingFunction: .easeIn)
-            self.arView.installGestures(for: parentEntity)
-            
-            self.presentationMode = .editing
+            self.startEditingMoving = parentEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.8, timingFunction: .easeIn)
+            self.startEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+                .filter{$0.playbackController == self.startEditingMoving}
+                .sink{ _ in
+                    self.arView.installGestures(for: parentEntity)
+                    self.baseLevitationPoint = parentEntity.transform.translation
+                    self.presentationMode = .editing
+                    
+                    self.killUITapGestureRecognizers()
+                    
+                    self.makeLevitation(modelEntity: parentEntity)
+                }
         }
     }
     
@@ -168,7 +178,7 @@ class ARSessionView : UIView {
     @objc func settingsButtonTapHandler(sender: UIButton) {
         self.arSessionViewEvent.publish(request: .showSettingsPage)
     }
-    
+
     /// Tap handler for successButton and placing new model on scene.
     /// - Parameter sender:  UIButton as sender.
     @objc func successButtonPlacing (sender: UIButton) {
@@ -180,7 +190,7 @@ class ARSessionView : UIView {
             let parentEntity = ModelEntity()
             parentEntity.name = "parentEntity-\(uuidString)"
             parentEntity.addChild(placingModelEntity)
- 
+    
             // add collision
             let entityBounds = placingModelEntity.visualBounds(relativeTo: parentEntity)
             parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateBox(size: entityBounds.extents).offsetBy(translation: entityBounds.center)])
@@ -199,10 +209,41 @@ class ARSessionView : UIView {
             self.arView.scene.addAnchor(anchorEntity)
             
             parentEntity.move(to: targetTransform, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
- 
+            
             self.placingModelEntity = nil
             self.viewData = .initial
         }
+    }
+    
+    func makeLevitation (modelEntity: ModelEntity) {
+        print("makeLevitation")
+        
+        
+//
+//
+//
+//        let kinematics: PhysicsBodyComponent = .init(massProperties: .default,
+//                                                     material: nil,
+//                                                     mode: .kinematic)
+//
+//        let linearVelocity = SIMD3<Float>(x: 0, y: 0.1, z: 0)
+//
+//
+//
+//        let motion: PhysicsMotionComponent = .init(linearVelocity: linearVelocity,
+//                                                   angularVelocity: [0, 0, 0])
+//        modelEntity.components.set(kinematics)
+//        modelEntity.components.set(motion)
+        
+        
+        
+        
+    }
+    
+    func killLevitation (modelEntity: ModelEntity) {
+        print("killLevitation")
+//        modelEntity.components.remove(PhysicsBodyComponent.self)
+//        modelEntity.components.remove(PhysicsMotionComponent.self)
     }
     
     /// Tap handler on cancelButton when canceling model placement.
@@ -217,7 +258,8 @@ class ARSessionView : UIView {
     @objc func successButtonEditing (sender: UIButton) {
         
         if self.anchorEntityEditable != nil,
-           let parentEntity = self.anchorEntityEditable!.children.first as? ModelEntity {
+           let parentEntity = self.anchorEntityEditable!.children.first as? ModelEntity,
+           let modelEntity = parentEntity.children.first as? ModelEntity{
             
             let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
                                               y: parentEntity.transform.translation.y - 0.10,
@@ -225,18 +267,22 @@ class ARSessionView : UIView {
 
             let newTransformform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
 
-            self.editingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable!, duration: 0.8, timingFunction: .easeInOut)
-            
-            self.editingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
-                .filter{$0.playbackController == self.editingMoving}
+            self.killLevitation(modelEntity: parentEntity)
+            self.endEditingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable!, duration: 0.8, timingFunction: .easeInOut)
+            self.endEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+                .filter{$0.playbackController == self.endEditingMoving}
                 .sink{ _ in
+                    // Overriding CollisionComponent
+                    let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
+                    parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateBox(size: entityBounds.extents).offsetBy(translation: entityBounds.center)])
+                    // Make UITapGestureRecognizer
+                    self.makeScreenUITapGestureRecognizers()
+                    
                     // remove gestureRecognizers using filter RealityKit.EntityTranslationGestureRecognizer
-                    if let entitiesGesures = self.arView.gestureRecognizers?.filter({$0 is RealityKit.EntityTranslationGestureRecognizer}), entitiesGesures.count > 0 {
-                        entitiesGesures.forEach {gesture in
-                            self.arView.removeGestureRecognizer(gesture)
-                        }
-                    }
+                    self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == RealityKit.EntityTranslationGestureRecognizer.self})
+                    
                     self.anchorEntityEditable = nil
+                    self.baseLevitationPoint = nil
                     self.presentationMode = .initial
                 }
         }
@@ -261,23 +307,28 @@ class ARSessionView : UIView {
             deletingMovingcomplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
                 .filter{$0.playbackController == self.deletingMoving}
                 .sink{ _ in
+                    // remove anchorEnity
                     self.arView.scene.anchors.remove(anchorEnity)
+                    // installation of general gesture recognizers for view.
+                    self.makeScreenUITapGestureRecognizers()
+                    // clearing irrelevant values
                     self.deletingMoving = nil
                     self.deletingMovingcomplete?.cancel()
+                    
                     self.presentationMode = .initial
                 }
         }
     }
     
-    func changesToTargetShape(transform: simd_float4x4) {
-        if self.targetShape == nil { self.targetShape = makeTargetShape()}
-        if !self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
-            self.targetShape!.move(to: transform, relativeTo: nil)
-            self.arView.scene.addAnchor(self.targetShape!)
-        } else {
-            self.targetShape!.move(to: transform, relativeTo: nil, duration: 0.4, timingFunction: .easeOut)
-        }
-    }
+//    func changesToTargetShape(transform: simd_float4x4) {
+//        if self.targetShape == nil { self.targetShape = makeTargetShape()}
+//        if !self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
+//            self.targetShape!.move(to: transform, relativeTo: nil)
+//            self.arView.scene.addAnchor(self.targetShape!)
+//        } else {
+//            self.targetShape!.move(to: transform, relativeTo: nil, duration: 0.4, timingFunction: .easeOut)
+//        }
+//    }
 
     func makeTargetShape() -> AnchorEntity {
 
@@ -316,22 +367,22 @@ class ARSessionView : UIView {
         return anchorEntity
     }
     
-    func deleteteTargetShape() {
-        if self.targetShape != nil {
-            if self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
-                self.deletingTargetShapeMoving = self.targetShape!.move(to: Transform(scale:SIMD3<Float>(repeating: 0.00), rotation:  self.targetShape!.transform.rotation, translation:  self.targetShape!.transform.translation), relativeTo: self.targetShape!, duration: 0.3, timingFunction: .easeOut)
-                
-                self.deletingTargetShapeMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
-                    .filter{$0.playbackController == self.deletingTargetShapeMoving}
-                    .sink{ _ in
-                        self.arView.scene.anchors.remove(self.targetShape!)
-                        self.targetShape = nil
-                        self.deletingTargetShapeMoving = nil
-                        self.deletingTargetShapeMovingComplete?.cancel()
-                    }
-            }
-        }
-    }
+//    func deleteteTargetShape() {
+//        if self.targetShape != nil {
+//            if self.arView.scene.anchors.contains(where: {$0 == self.targetShape!}) {
+//                self.deletingTargetShapeMoving = self.targetShape!.move(to: Transform(scale:SIMD3<Float>(repeating: 0.00), rotation:  self.targetShape!.transform.rotation, translation:  self.targetShape!.transform.translation), relativeTo: self.targetShape!, duration: 0.3, timingFunction: .easeOut)
+//
+//                self.deletingTargetShapeMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+//                    .filter{$0.playbackController == self.deletingTargetShapeMoving}
+//                    .sink{ _ in
+//                        self.arView.scene.anchors.remove(self.targetShape!)
+//                        self.targetShape = nil
+//                        self.deletingTargetShapeMoving = nil
+//                        self.deletingTargetShapeMovingComplete?.cancel()
+//                    }
+//            }
+//        }
+//    }
 }
 
 class ARSessionViewEvent {
@@ -376,15 +427,24 @@ extension ARSessionView : ARSessionDelegate {
     }
 }
 
-extension ARView : ARCoachingOverlayViewDelegate {
+extension CustomARView : ARCoachingOverlayViewDelegate {
 
     public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
-        // Do something
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.3) {
+                self.focusEntity.isEnabled = false
+            }
+        }
     }
     
     
     public func coachingOverlayViewDidDeactivate (_ coachingOverlayView: ARCoachingOverlayView) {
-        // Do something
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.3) {
+                self.focusEntity.isEnabled = true
+            }
+        }
+        
     }
 }
 
@@ -404,10 +464,12 @@ class CustomARView : ARView {
     
     required init(frame frameRect: CGRect) {
         super.init(frame: frameRect)
-
-        focusEntity =  FocusEntity(on: self, style: .classic(color: .red))
-        focusEntity.delegate = self
-        focusEntity.setAutoUpdate(to: true)
+        // create FocusEntity
+        let meshResource = MeshResource.generatePlane(width: 0.2, depth: 0.2)
+        focusEntity = FocusEntity(on: self, focus: FocusEntityComponent(style: .colored(onColor: .red, offColor: .green, nonTrackingColor: .blue, mesh: meshResource)))
+        self.focusEntity.delegate = self
+        self.focusEntity.setAutoUpdate(to: true)
+        self.focusEntity.isEnabled = true
     }
     
     @objc required dynamic init?(coder decoder: NSCoder) {

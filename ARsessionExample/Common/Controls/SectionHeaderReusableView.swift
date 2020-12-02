@@ -38,4 +38,3 @@ class SectionHeaderReusableView: UICollectionReusableView {
         return label
     }
 }
-
