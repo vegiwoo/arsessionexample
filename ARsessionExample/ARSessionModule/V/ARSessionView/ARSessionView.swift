@@ -7,9 +7,8 @@ import UIKit
 import ARKit
 import RealityKit
 import Combine
-import FocusEntity
 
-/// Class for the ArSession view
+/// Class for ArSession view
 class ARSessionView : UIView {
     
     enum ARSessionViewPresentationMode {
@@ -25,7 +24,7 @@ class ARSessionView : UIView {
     var arSessionViewEvent : ARSessionViewEvent!
     
     // UI cotrols
-    lazy var arView : CustomARView = self.makeArView()
+    lazy var arView : ARView = self.makeArView()
     // - Buttons
     lazy var modelButton    : UIButton = makeFunctionalButton(sfSymbolName: "cube.fill")
     lazy var settingsButton : UIButton = makeFunctionalButton(sfSymbolName: "gear")
@@ -44,7 +43,7 @@ class ARSessionView : UIView {
     var placingButtonStack : UIStackView?
     var editingButtonStack : UIStackView?
     
-    var placingModelEntity : ThreeDModelEntity? {
+    var placingModelEntity : Entity? {
         willSet {
             if newValue != nil {
                 self.presentationMode = .placing
@@ -53,10 +52,12 @@ class ARSessionView : UIView {
             }
         }
     }
+    var names: (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String)?
+    var initialPlacementTransformation: Transform?
+    var finalPlacementTransformation: Transform?
     
     // vars for edit model
     var anchorEntityEditable : AnchorEntity?
-
     var anchorEntityEditableTransform : Transform?
     var anchorEntityEditableTranslation : SIMD3<Float>?
     
@@ -72,20 +73,22 @@ class ARSessionView : UIView {
     var detectPlacementPointForTargetShape: Bool! {
         didSet {
             if detectPlacementPointForTargetShape == false {
-                //self.deleteteTargetShape()
+                self.killTargetShape()
             }
         }
     }
     var targetShapeWorldTransform : simd_float4x4? {
         willSet {
             if let newValue = newValue {
-                //self.changesToTargetShape(transform: newValue)
+                self.changesToTargetShape(transform: newValue)
             }
         }
     }
-    //var targetShape : AnchorEntity?
-    //var deletingTargetShapeMoving: AnimationPlaybackController!
-    //var deletingTargetShapeMovingComplete : AnyCancellable?
+    var targetShape : AnchorEntity?
+    // -- kill TargetShape AnimationPlaybackController
+    var killTargetShapeMoving: AnimationPlaybackController!
+    // -- kill TargetShape subscriber
+    var killTargetShapeMovingComplete : AnyCancellable?
 
     // levitation
     var levitationTimer : Timer?
@@ -107,7 +110,7 @@ class ARSessionView : UIView {
         }
     }
     var relativeTranslation : SIMD3<Float>?
-    // Точка установки модели относительно оси y
+    // Point of placing of model (relative to y-axis)
     var modelPlacementPoint : SIMD3<Float>?
     
     // init
@@ -139,16 +142,18 @@ class ARSessionView : UIView {
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
             self.arView.session.delegate = self
-            self.arCoachingOverlayView = makeCoachingOverlayView(goal: .anyPlane)
-            self.arView.addSubview(arCoachingOverlayView)
-            arCoachingOverlayView.edgesToSuperview()
-            self.arView.bringSubviewToFront(self.arCoachingOverlayView)
-            self.arCoachingOverlayView.session = arSession
-            self.arCoachingOverlayView.delegate = self
-        case .createSuccess(let threeDModelEntity):
-            if self.placingModelEntity == nil {
-                self.placingModelEntity = threeDModelEntity
+            if !arView.subviews.contains(where: {type(of: $0) == ARCoachingOverlayView.self}) {
+                self.arCoachingOverlayView = makeCoachingOverlayView(goal: .anyPlane)
+                self.arView.addSubview(arCoachingOverlayView)
+                arCoachingOverlayView.edgesToSuperview()
+                self.arView.bringSubviewToFront(self.arCoachingOverlayView)
+                self.arCoachingOverlayView.session = arSession
+                self.arCoachingOverlayView.delegate = self
             }
+        case .createSuccess(let modelEntity, let names):
+            self.names = names
+            self.placingModelEntity = modelEntity
+            self.viewData = .initial
         }
     }
     
@@ -161,7 +166,8 @@ class ARSessionView : UIView {
 
         let entities = (sender.view as! ARView).entities(at: sender.location(in: sender.view))
         if let parentEntity = entities.first as? ModelEntity,
-           let anchorEntity = parentEntity.parent as? AnchorEntity {
+           let anchorEntity = parentEntity.parent as? AnchorEntity,
+           let modelEntity = parentEntity.children.first {
   
             self.anchorEntityEditable = anchorEntity
 
@@ -175,7 +181,8 @@ class ARSessionView : UIView {
                 .filter{$0.playbackController == self.startEditingMoving}
                 .sink{ _ in
                     // overriding CollisionComponent
-                    parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateSphere(radius: 3.0)])
+                    let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
+                    parentEntity.collision = self.makeEditingCollisionComponent(entityBounds: entityBounds)
                     // add gestures
                     self.arView.installGestures([.rotation, .scale], for: parentEntity)
                     
@@ -186,6 +193,8 @@ class ARSessionView : UIView {
                     self.killUITapGestureRecognizers()
                     // levitation animation
                     self.makeLevitation(modelEntity: parentEntity)
+                    
+                    self.arView.debugOptions.insert(.showPhysics)
                 }
         }
     }
@@ -206,17 +215,47 @@ class ARSessionView : UIView {
     /// Tap handler for successButton and placing new model on scene.
     /// - Parameter sender:  UIButton as sender.
     @objc func successButtonPlacing (sender: UIButton) {
-        if let placingModelEntity = self.placingModelEntity {
-
-            self.arView.scene.addAnchor(placingModelEntity.anchorEntity!)
-
-            placingModelEntity.parentEntity!.move(to: placingModelEntity.finalPlacementTransformation!, relativeTo: placingModelEntity.anchorEntity!, duration: 0.3, timingFunction: .easeIn)
-            
-            self.placingModelEntity = nil
-            self.viewData = .initial
-            
-            self.arView.debugOptions.insert(.showPhysics)
-        }
+        
+        guard let modelEntity = self.placingModelEntity,
+              let names = self.names else { return }
+        
+        // modelEntity naming
+        modelEntity.name = names.modelEntityName
+        
+        // add parentEntiry
+        let parentEntity = ModelEntity()
+        parentEntity.name = names.parentEntityName
+        parentEntity.addChild(modelEntity)
+        
+        // add collision to parentEntiry
+        let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
+        parentEntity.collision = self.makeNormalCollisionComponent(entityBounds: entityBounds)
+        
+        // anchorEntity
+        let anchorEntity = AnchorEntity(plane: .any)
+        anchorEntity.name = names.anchorEntityName
+        anchorEntity.addChild(parentEntity)
+        
+        // transformation
+        // remember target dimensions of model
+        self.finalPlacementTransformation = parentEntity.transform
+        // zero out size of model for smooth appearance
+        self.initialPlacementTransformation = Transform(scale: SIMD3<Float>(repeating: 0.00),
+                                                        rotation: self.finalPlacementTransformation!.rotation,
+                                                        translation: self.finalPlacementTransformation!.translation)
+        parentEntity.transform = initialPlacementTransformation!
+        
+        // add to scene
+        self.arView.scene.addAnchor(anchorEntity)
+        
+        parentEntity.move(to: finalPlacementTransformation!, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
+        
+        // zeroing of irrelevant variables
+        self.placingModelEntity = nil
+        self.initialPlacementTransformation = nil
+        self.finalPlacementTransformation = nil
+        
+        self.viewData = .initial
     }
         
     /// Tap handler on cancelButton when canceling model placement.
@@ -230,36 +269,39 @@ class ARSessionView : UIView {
     /// - Parameter sender: UIButton as sender.
     @objc func successButtonEditing (sender: UIButton) {
         
-        if self.anchorEntityEditable != nil,
-           let parentEntity = self.anchorEntityEditable!.children.first as? ModelEntity,
-           let modelEntity = parentEntity.children.first as? ModelEntity{
-            
-            let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
-                                              y: 0.00,
-                                              z: parentEntity.transform.translation.z)
+        guard let anchorEntityEditable = self.anchorEntityEditable,
+              let parentEntity = self.anchorEntityEditable!.children.first as? ModelEntity,
+              let modelEntity = parentEntity.children.first
+        else { return }
 
-            let newTransformform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
-
-            self.killLevitation(modelEntity: parentEntity)
-            self.endEditingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable!, duration: 0.8, timingFunction: .easeInOut)
-            self.endEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
-                .filter{$0.playbackController == self.endEditingMoving}
-                .sink{ _ in
-                    // overriding CollisionComponent
-                    let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
-                    parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateBox(size: entityBounds.max).offsetBy(translation: entityBounds.center)])
-                    // Make UITapGestureRecognizer
-                    self.makeScreenUITapGestureRecognizers()
-                    self.killUIPanGestureRecognizers()
-                    
-                    // remove gestureRecognizers using filter RealityKit.EntityTranslationGestureRecognizer
-                    self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == RealityKit.EntityTranslationGestureRecognizer.self})
-                    
-                    self.anchorEntityEditable = nil
-                    self.baseLevitationPoint = nil
-                    self.presentationMode = .initial
-                }
-        }
+        let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
+                                          y: 0.00,
+                                          z: parentEntity.transform.translation.z)
+        
+        let newTransformform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
+        
+        self.killLevitation(modelEntity: parentEntity)
+        self.endEditingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable, duration: 0.8, timingFunction: .easeOut)
+        self.endEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
+            .filter{$0.playbackController == self.endEditingMoving}
+            .sink{ _ in
+                // overriding CollisionComponent
+                let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
+                parentEntity.collision = self.makeNormalCollisionComponent(entityBounds: entityBounds)
+                // Make UITapGestureRecognizer
+                self.makeScreenUITapGestureRecognizers()
+                self.killUIPanGestureRecognizers()
+                
+                // remove gestureRecognizers using filter RealityKit.EntityTranslationGestureRecognizer
+                self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == RealityKit.EntityTranslationGestureRecognizer.self})
+                
+                self.anchorEntityEditable = nil
+                self.baseLevitationPoint = nil
+                self.presentationMode = .initial
+                
+                self.arView.debugOptions = []
+            }
+        
     }
     
     /// Tap handler on trashButton - animation and model deletion
@@ -342,7 +384,7 @@ extension ARSessionView : ARCoachingOverlayViewDelegate {
     public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.3) {
-                self.arView.focusEntity.isEnabled = false
+                self.targetShape?.isEnabled = false
             }
         }
     }
@@ -350,57 +392,8 @@ extension ARSessionView : ARCoachingOverlayViewDelegate {
     public func coachingOverlayViewDidDeactivate (_ coachingOverlayView: ARCoachingOverlayView) {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.3) {
-                self.arView.focusEntity.isEnabled = true
+                self.targetShape?.isEnabled = true
             }
         }
-        
-    }
-}
-
-extension CustomARView : FocusEntityDelegate {
-    public func toTrackingState() {
-        // Do something
-    }
-    
-    public func toInitializingState() {
-        // Do something
-    }
-}
-
-class CustomARView : ARView {
-    
-    var focusEntity : FocusEntity!
-    
-    required init(frame frameRect: CGRect) {
-        super.init(frame: frameRect)
-        // create FocusEntity
-        let meshResource = MeshResource.generatePlane(width: 0.3, depth: 0.3)
-        var texture: TextureResource?
-        var material: UnlitMaterial!
-        do {
-            if let textureURL = Bundle.main.url(forResource: "targetShapeTexture_001", withExtension: "png") {
-                texture = try TextureResource.load(contentsOf: textureURL)
-                material = UnlitMaterial()
-                material!.baseColor = .texture (texture!)
-                material!.tintColor = UIColor(red: 0.89, green: 0.89, blue: 0.91, alpha: 0.45)
-                
-            } else {
-                material = UnlitMaterial(color: .systemGray3)
-            }
-        } catch {
-            material = UnlitMaterial(color: .systemGray3)
-        }
-        
-        let modelEntity = ModelEntity(mesh: meshResource, materials: [material])
-        focusEntity = FocusEntity(on: self, style: .classic(color: UIColor.clear))
-        focusEntity.addChild(modelEntity)
-        
-        self.focusEntity.delegate = self
-        self.focusEntity.setAutoUpdate(to: true)
-        self.focusEntity.isEnabled = true
-    }
-    
-    @objc required dynamic init?(coder decoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }

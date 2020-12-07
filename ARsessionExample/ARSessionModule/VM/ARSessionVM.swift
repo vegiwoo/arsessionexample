@@ -6,7 +6,7 @@ import Foundation
 import ARKit
 import RealityKit
 import Combine
-import PromiseKit
+
 
 /// Class for ArSession view model delegate.
 protocol ARSessionVMDelegate : class {
@@ -38,7 +38,7 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     fileprivate var arSessionViewEventSubscriber: AnyCancellable?
     var arSessionVMEvent : ARSessionVMEvent!
     fileprivate var modelEntityLoadAsyncSubscriber : AnyCancellable?
-    fileprivate var threeDModelEntityCancellables = [Cancellable]()
+    //fileprivate var threeDModelEntityCancellables = [Cancellable]()
     
     init(arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -48,34 +48,81 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
         subscribe()
     }
     
+    deinit {
+        unSubscribe()
+    }
+    
     func subscribe() {
         self.arSessionViewEventSubscriber = arSessionViewEvent.publisherRequest.sink{request in
             switch request {
             case .createModelEntityFromFile:
-                
-                
+
                 guard let resourceURL = Bundle.main.resourceURL,
                       let files = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles),
-                      let fileURL = files.first(where: {$0.lastPathComponent.hasSuffix("usdz")}) else { return }
+                      let fileURL = files.first(where: {$0.lastPathComponent.hasSuffix("usdz")}),
+                      let modelName = fileURL.lastPathComponent.split(separator: ".").first else { return }
 
-                let threeDModelEntity = ThreeDModelEntity(modelId: 1, url: fileURL)
-                // Подписка на события созданной сущности
-                self.threeDModelEntityCancellables.append(threeDModelEntity.threeDModelEntityPublisher.publisherRequest.sink{request in
-                    switch request {
-                    
-                    case .readinessForPlacement(threeDModelEntity: let threeDModelEntity):
-                        self.updateViewData?(.createSuccess(threeDModelEntity: threeDModelEntity))
-                    }
-                })
-
+                self.modelEntityLoadAsyncSubscriber = ModelEntity
+                    .loadAsync(contentsOf: fileURL, withName: String(modelName))
+                    .sink(receiveCompletion: { completion in
+                        switch completion {
+                        case .finished:
+                            #if DEBUG
+                            print("[DEBUG]: Model \(String(modelName)) loading completed successfully")
+                            #endif
+                            self.modelEntityLoadAsyncSubscriber?.cancel()
+                        case .failure(let error):
+                            #if DEBUG
+                            print("[DEBUG]: Model \(String(modelName)) loading error - \(error)")
+                            #endif
+                            self.modelEntityLoadAsyncSubscriber?.cancel()
+                        }
+                    }, receiveValue: { modelEntity in
+                        let names = self.makeEntitiesNames(modelId: 1)
+                        self.updateViewData?(.createSuccess(modelEntity: modelEntity, names: names))
+                        self.modelEntityLoadAsyncSubscriber?.cancel()
+                    })
             case .showSettingsPage:
                 self.delegate?.showSettingsPage()
             }
         }
     }
     
-    func unsSubscribe() {
+    func unSubscribe() {
         self.arSessionViewEventSubscriber?.cancel()
+        self.modelEntityLoadAsyncSubscriber?.cancel()
+    }
+    
+    /// Creates names for modelEntity, parentEntity and anchorEntity of model.
+    /// - Parameters:
+    ///   - arAnchorName: ARAnchor name for forming names (optional).
+    ///   - modelId: Model Id.
+    /// - Returns: Tuple of names (arAnchorName, modelEntityName, parentEntityName, anchorEntityName).
+    fileprivate func makeEntitiesNames(arAnchorName: String? = nil, modelId: Int) ->  (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String){
+        if let arAnchorName = arAnchorName {
+            // for example: 'modelARAnchor_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
+            let aranchorNameSubstrings = arAnchorName.split(separator: "_")
+            let modelIdString = String(aranchorNameSubstrings[1])
+            let modelExampleUUIDString = String(aranchorNameSubstrings[2])
+            /*
+             for example:
+             'modelARAnchor_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
+             'modelEntity_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
+             'parentEntity_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
+             'anchorEntity_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
+             */
+            return (arAnchorName: arAnchorName,
+                    modelEntityName: "\(SettingsApp.modelEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)",
+                    parentEntityName: "\(SettingsApp.parentEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)",
+                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)")
+
+        } else{
+            let uuidString = UUID().uuidString
+            return (arAnchorName: "\(SettingsApp.modelARAnchorPrefix)_\(String(modelId))_\(uuidString)",
+                    modelEntityName: "\(SettingsApp.modelEntityPrefix)_\(String(modelId))_\(uuidString)",
+                    parentEntityName: "\(SettingsApp.parentEntityPrefix)_\(String(modelId))_\(uuidString)",
+                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(String(modelId))_\(uuidString)")
+        }
     }
     
     fileprivate func makeArSessionConfiguration() -> ARWorldTrackingConfiguration {

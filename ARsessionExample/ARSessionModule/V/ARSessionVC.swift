@@ -8,7 +8,6 @@ import RealityKit
 import ARKit
 import SwiftUI
 import Combine
-import FocusEntity
 
 //class Model {
 //    let modelName : String

@@ -10,8 +10,8 @@
 		2F02497E87F8E2E345B5E331 /* Pods_ARsessionExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC513E667B149EE87B2A4981 /* Pods_ARsessionExample.framework */; };
 		774C4F7625779AFA00D8B621 /* ARSessionView + Gestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774C4F7525779AFA00D8B621 /* ARSessionView + Gestures.swift */; };
 		774C4F792577BA0500D8B621 /* ARSessionView + Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774C4F782577BA0500D8B621 /* ARSessionView + Animation.swift */; };
-		77D6AB5325617EE0004DCCFA /* targetShapeTexture_001.png in Resources */ = {isa = PBXBuildFile; fileRef = 77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */; };
-		77DF10BF257A8514007CC5ED /* ThreeDModelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */; };
+		77C8172C257E8277008AEB5D /* Files in Resources */ = {isa = PBXBuildFile; fileRef = 77C8172B257E8277008AEB5D /* Files */; };
+		77C81731257E835C008AEB5D /* ARSessionView + ARSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77C81730257E835C008AEB5D /* ARSessionView + ARSession.swift */; };
 		77F6C216255A97DF00B1C172 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C215255A97DF00B1C172 /* AppDelegate.swift */; };
 		77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C21E255A97E200B1C172 /* Assets.xcassets */; };
 		77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C220255A97E200B1C172 /* LaunchScreen.storyboard */; };
@@ -35,17 +35,15 @@
 		77F6C289255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C288255AC2D300B1C172 /* ARSessionSettingsView + Constraints.swift */; };
 		77F6C28D255AC3CA00B1C172 /* SectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C28C255AC3CA00B1C172 /* SectionHeaderReusableView.swift */; };
 		77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C290255AC49100B1C172 /* SettingsApp.swift */; };
-		77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */ = {isa = PBXBuildFile; productRef = 77F6C299255BF0A000B1C172 /* PromiseKit */; };
 		77F6C2A1255BFAC100B1C172 /* fender.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C29D255BFAC000B1C172 /* fender.usdz */; };
-		77F6C2AF255C3AD000B1C172 /* FocusEntity in Frameworks */ = {isa = PBXBuildFile; productRef = 77F6C2AE255C3AD000B1C172 /* FocusEntity */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		25840910A75401B75CD4CA95 /* Pods-ARsessionExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ARsessionExample.debug.xcconfig"; path = "Target Support Files/Pods-ARsessionExample/Pods-ARsessionExample.debug.xcconfig"; sourceTree = "<group>"; };
 		774C4F7525779AFA00D8B621 /* ARSessionView + Gestures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionView + Gestures.swift"; sourceTree = "<group>"; };
 		774C4F782577BA0500D8B621 /* ARSessionView + Animation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionView + Animation.swift"; sourceTree = "<group>"; };
-		77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = targetShapeTexture_001.png; sourceTree = "<group>"; };
-		77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDModelEntity.swift; sourceTree = "<group>"; };
+		77C8172B257E8277008AEB5D /* Files */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Files; sourceTree = "<group>"; };
+		77C81730257E835C008AEB5D /* ARSessionView + ARSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionView + ARSession.swift"; sourceTree = "<group>"; };
 		77F6C212255A97DF00B1C172 /* ARsessionExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARsessionExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77F6C215255A97DF00B1C172 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77F6C21E255A97E200B1C172 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -80,9 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				77F6C2AF255C3AD000B1C172 /* FocusEntity in Frameworks */,
 				77F6C246255A9B7800B1C172 /* TinyConstraints in Frameworks */,
-				77F6C29A255BF0A000B1C172 /* PromiseKit in Frameworks */,
 				2F02497E87F8E2E345B5E331 /* Pods_ARsessionExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -90,14 +86,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		77D6AB4E256178C0004DCCFA /* Files */ = {
-			isa = PBXGroup;
-			children = (
-				77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */,
-			);
-			path = Files;
-			sourceTree = "<group>";
-		};
 		77F6C209255A97DF00B1C172 = {
 			isa = PBXGroup;
 			children = (
@@ -119,7 +107,7 @@
 		77F6C214255A97DF00B1C172 /* ARsessionExample */ = {
 			isa = PBXGroup;
 			children = (
-				77D6AB4E256178C0004DCCFA /* Files */,
+				77C8172B257E8277008AEB5D /* Files */,
 				77F6C29C255BFA8D00B1C172 /* Models */,
 				77F6C28F255AC47B00B1C172 /* Helpers */,
 				77F6C262255AB29A00B1C172 /* Common */,
@@ -173,7 +161,6 @@
 			isa = PBXGroup;
 			children = (
 				77F6C23D255A99D400B1C172 /* ARSessionData.swift */,
-				77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */,
 			);
 			path = M;
 			sourceTree = "<group>";
@@ -186,6 +173,7 @@
 				77F6C24B255A9DD700B1C172 /* ARSessionView + Constraints.swift */,
 				774C4F7525779AFA00D8B621 /* ARSessionView + Gestures.swift */,
 				774C4F782577BA0500D8B621 /* ARSessionView + Animation.swift */,
+				77C81730257E835C008AEB5D /* ARSessionView + ARSession.swift */,
 			);
 			path = ARSessionView;
 			sourceTree = "<group>";
@@ -316,8 +304,6 @@
 			name = ARsessionExample;
 			packageProductDependencies = (
 				77F6C245255A9B7800B1C172 /* TinyConstraints */,
-				77F6C299255BF0A000B1C172 /* PromiseKit */,
-				77F6C2AE255C3AD000B1C172 /* FocusEntity */,
 			);
 			productName = ARsessionExample;
 			productReference = 77F6C212255A97DF00B1C172 /* ARsessionExample.app */;
@@ -348,8 +334,6 @@
 			mainGroup = 77F6C209255A97DF00B1C172;
 			packageReferences = (
 				77F6C244255A9B7800B1C172 /* XCRemoteSwiftPackageReference "TinyConstraints" */,
-				77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */,
-				77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */,
 			);
 			productRefGroup = 77F6C213255A97DF00B1C172 /* Products */;
 			projectDirPath = "";
@@ -365,9 +349,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77C8172C257E8277008AEB5D /* Files in Resources */,
 				77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */,
 				77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */,
-				77D6AB5325617EE0004DCCFA /* targetShapeTexture_001.png in Resources */,
 				77F6C2A1255BFAC100B1C172 /* fender.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -427,12 +411,12 @@
 				77F6C249255A9DCB00B1C172 /* ARSessionView + UI.swift in Sources */,
 				77F6C260255AB0E100B1C172 /* ARSessionSettingsData.swift in Sources */,
 				77F6C259255AB09D00B1C172 /* ARSessionSettingsVM.swift in Sources */,
+				77C81731257E835C008AEB5D /* ARSessionView + ARSession.swift in Sources */,
 				77F6C291255AC49100B1C172 /* SettingsApp.swift in Sources */,
 				77F6C283255AC2BD00B1C172 /* ARSessionSettingsView + UI.swift in Sources */,
 				77F6C25D255AB0C000B1C172 /* ARSessionSettingsVC.swift in Sources */,
 				77F6C233255A993900B1C172 /* ARSessionVC.swift in Sources */,
 				77F6C24C255A9DD700B1C172 /* ARSessionView + Constraints.swift in Sources */,
-				77DF10BF257A8514007CC5ED /* ThreeDModelEntity.swift in Sources */,
 				77F6C23B255A999400B1C172 /* ARSessionVM.swift in Sources */,
 				77F6C27D255ABC4400B1C172 /* ARSessionSettingsView.swift in Sources */,
 				77F6C267255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift in Sources */,
@@ -649,22 +633,6 @@
 				minimumVersion = 4.0.1;
 			};
 		};
-		77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mxcl/PromiseKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.13.3;
-			};
-		};
-		77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/maxxfrazer/FocusEntity.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.1;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -672,16 +640,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 77F6C244255A9B7800B1C172 /* XCRemoteSwiftPackageReference "TinyConstraints" */;
 			productName = TinyConstraints;
-		};
-		77F6C299255BF0A000B1C172 /* PromiseKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 77F6C298255BF0A000B1C172 /* XCRemoteSwiftPackageReference "PromiseKit" */;
-			productName = PromiseKit;
-		};
-		77F6C2AE255C3AD000B1C172 /* FocusEntity */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 77F6C2AD255C3AD000B1C172 /* XCRemoteSwiftPackageReference "FocusEntity" */;
-			productName = FocusEntity;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

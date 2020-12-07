@@ -9,7 +9,6 @@ import UIKit
 import ARKit
 import RealityKit
 import TinyConstraints
-import FocusEntity
 
 /// Work with constraints
 extension ARSessionView {
@@ -22,13 +21,12 @@ extension ARSessionView {
         changingStackFunctionality()
     }
     
-    func makeArView () -> CustomARView {
-        let view = CustomARView(frame: .zero)
+    func makeArView () -> ARView {
+        let view = ARView(frame: .zero)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.clipsToBounds = true
         view.automaticallyConfigureSession = false
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.focusEntity.isEnabled = true
         return view
     }
     
@@ -98,9 +96,6 @@ extension ARSessionView {
                     self.addSubview(self.initialButtonStack!)
                     initialButtonStackEdgesToSuperview = self.initialButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
                     
-                    // focusEntity
-                    //if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
-                    
                     // buttons targets
                     // modelButton
                     self.modelButton.removeTarget(nil, action: nil, for: .allEvents)
@@ -160,9 +155,6 @@ extension ARSessionView {
                     
                     self.addSubview(self.editingButtonStack!)
                     editingButtonStackEdgesToSuperview = self.editingButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
-                    
-                    // focusEntity
-                    //if self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
                     
                     // buttons targets
                     self.succsessButton.removeTarget(nil, action: nil, for: .allEvents)

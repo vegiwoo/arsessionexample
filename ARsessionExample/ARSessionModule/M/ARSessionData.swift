@@ -12,5 +12,5 @@ import RealityKit
 enum ARSessionData {
     case initial
     case linkTo(arSession: ARSession)
-    case createSuccess(threeDModelEntity: ThreeDModelEntity)
+    case createSuccess(modelEntity: Entity, names: (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String))
 }
