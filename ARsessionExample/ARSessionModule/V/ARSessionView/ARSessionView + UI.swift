@@ -130,9 +130,6 @@ extension ARSessionView {
                     self.placingButtonStack = self.makeFunctionalButtonsStack(uiviews: [self.succsessButton, self.canceledButton])
                     self.addSubview(self.placingButtonStack!)
                     placingButtonStackEdgesToSuperview =  self.placingButtonStack!.edgesToSuperview(excluding: .top, insets: .init(top: 0, left: 50, bottom: 15, right: 50), relation: .equal, priority: .defaultHigh, isActive: true, usingSafeArea: true)
-                    
-                    // focusEntity
-                    //if !self.arView.focusEntity.isEnabled {self.arView.focusEntity.isEnabled.toggle()}
 
                     // buttons targets
                     // succsessButton

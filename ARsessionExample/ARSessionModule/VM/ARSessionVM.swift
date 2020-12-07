@@ -38,6 +38,7 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     fileprivate var arSessionViewEventSubscriber: AnyCancellable?
     var arSessionVMEvent : ARSessionVMEvent!
     fileprivate var modelEntityLoadAsyncSubscriber : AnyCancellable?
+    fileprivate var threeDModelEntityCancellables = [Cancellable]()
     
     init(arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -51,22 +52,22 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
         self.arSessionViewEventSubscriber = arSessionViewEvent.publisherRequest.sink{request in
             switch request {
             case .createModelEntityFromFile:
-                guard let path = Bundle.main.resourcePath, let files = try? FileManager.default.contentsOfDirectory(atPath: path) else { fatalError()} //TODO !!!
-                if let fileName = files.first(where: {$0.hasSuffix("usdz")}) {
-                    let modelName = fileName.replacingOccurrences(of: ".usdz", with: "")
+                
+                
+                guard let resourceURL = Bundle.main.resourceURL,
+                      let files = try? FileManager.default.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles),
+                      let fileURL = files.first(where: {$0.lastPathComponent.hasSuffix("usdz")}) else { return }
 
-                    self.modelEntityLoadAsyncSubscriber = ModelEntity.loadModelAsync(named: fileName)
-                        .sink(receiveCompletion: { complition in
-                            switch complition {
-                            case .finished:
-                                print("DEBUG: Model success load with name \(modelName)")
-                            case .failure(let error):
-                                print("DEBUG: Model \(modelName) load with error \(error.localizedDescription)")
-                            }
-                        }, receiveValue: { modelEntity in
-                            self.updateViewData?(.createSuccess(modelEntity: modelEntity))
-                        })
-                }
+                let threeDModelEntity = ThreeDModelEntity(modelId: 1, url: fileURL)
+                // Подписка на события созданной сущности
+                self.threeDModelEntityCancellables.append(threeDModelEntity.threeDModelEntityPublisher.publisherRequest.sink{request in
+                    switch request {
+                    
+                    case .readinessForPlacement(threeDModelEntity: let threeDModelEntity):
+                        self.updateViewData?(.createSuccess(threeDModelEntity: threeDModelEntity))
+                    }
+                })
+
             case .showSettingsPage:
                 self.delegate?.showSettingsPage()
             }

@@ -18,4 +18,10 @@ final class SettingsApp {
     public static func sizeСalculation (value : CGFloat) -> CGFloat {
         return UIDevice.current.userInterfaceIdiom == .phone ? value : value * 1.5
     }
+    
+    // prefixes
+    static var modelARAnchorPrefix  : String = "modelARAnchor"
+    static var modelEntityPrefix    : String = "modelEntity"
+    static var parentEntityPrefix   : String = "parentEntity"
+    static var anchorEntityPrefix   : String = "anchorEntity"
 }

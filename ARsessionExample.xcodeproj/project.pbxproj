@@ -11,6 +11,7 @@
 		774C4F7625779AFA00D8B621 /* ARSessionView + Gestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774C4F7525779AFA00D8B621 /* ARSessionView + Gestures.swift */; };
 		774C4F792577BA0500D8B621 /* ARSessionView + Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 774C4F782577BA0500D8B621 /* ARSessionView + Animation.swift */; };
 		77D6AB5325617EE0004DCCFA /* targetShapeTexture_001.png in Resources */ = {isa = PBXBuildFile; fileRef = 77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */; };
+		77DF10BF257A8514007CC5ED /* ThreeDModelEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */; };
 		77F6C216255A97DF00B1C172 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F6C215255A97DF00B1C172 /* AppDelegate.swift */; };
 		77F6C21F255A97E200B1C172 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C21E255A97E200B1C172 /* Assets.xcassets */; };
 		77F6C222255A97E200B1C172 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77F6C220255A97E200B1C172 /* LaunchScreen.storyboard */; };
@@ -44,6 +45,7 @@
 		774C4F7525779AFA00D8B621 /* ARSessionView + Gestures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionView + Gestures.swift"; sourceTree = "<group>"; };
 		774C4F782577BA0500D8B621 /* ARSessionView + Animation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ARSessionView + Animation.swift"; sourceTree = "<group>"; };
 		77D6AB5225617EE0004DCCFA /* targetShapeTexture_001.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = targetShapeTexture_001.png; sourceTree = "<group>"; };
+		77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDModelEntity.swift; sourceTree = "<group>"; };
 		77F6C212255A97DF00B1C172 /* ARsessionExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARsessionExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77F6C215255A97DF00B1C172 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77F6C21E255A97E200B1C172 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				77F6C23D255A99D400B1C172 /* ARSessionData.swift */,
+				77DF10BE257A8514007CC5ED /* ThreeDModelEntity.swift */,
 			);
 			path = M;
 			sourceTree = "<group>";
@@ -429,6 +432,7 @@
 				77F6C25D255AB0C000B1C172 /* ARSessionSettingsVC.swift in Sources */,
 				77F6C233255A993900B1C172 /* ARSessionVC.swift in Sources */,
 				77F6C24C255A9DD700B1C172 /* ARSessionView + Constraints.swift in Sources */,
+				77DF10BF257A8514007CC5ED /* ThreeDModelEntity.swift in Sources */,
 				77F6C23B255A999400B1C172 /* ARSessionVM.swift in Sources */,
 				77F6C27D255ABC4400B1C172 /* ARSessionSettingsView.swift in Sources */,
 				77F6C267255AB5EF00B1C172 /* ItemCellWithImageWithSwitch.swift in Sources */,

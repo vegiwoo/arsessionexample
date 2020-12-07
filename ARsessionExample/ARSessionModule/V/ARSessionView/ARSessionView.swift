@@ -44,7 +44,7 @@ class ARSessionView : UIView {
     var placingButtonStack : UIStackView?
     var editingButtonStack : UIStackView?
     
-    var placingModelEntity : ModelEntity? {
+    var placingModelEntity : ThreeDModelEntity? {
         willSet {
             if newValue != nil {
                 self.presentationMode = .placing
@@ -145,9 +145,9 @@ class ARSessionView : UIView {
             self.arView.bringSubviewToFront(self.arCoachingOverlayView)
             self.arCoachingOverlayView.session = arSession
             self.arCoachingOverlayView.delegate = self
-        case .createSuccess(let modelEntity):
+        case .createSuccess(let threeDModelEntity):
             if self.placingModelEntity == nil {
-                self.placingModelEntity = modelEntity
+                self.placingModelEntity = threeDModelEntity
             }
         }
     }
@@ -208,31 +208,9 @@ class ARSessionView : UIView {
     @objc func successButtonPlacing (sender: UIButton) {
         if let placingModelEntity = self.placingModelEntity {
 
-            let uuidString = UUID().uuidString
-        
-            // parentEntiry
-            let parentEntity = ModelEntity()
-            parentEntity.name = "parentEntity-\(uuidString)"
-            parentEntity.addChild(placingModelEntity)
-    
-            // add collision
-            let entityBounds = placingModelEntity.visualBounds(relativeTo: parentEntity)
-            parentEntity.collision = CollisionComponent(shapes: [ShapeResource.generateBox(size: entityBounds.max).offsetBy(translation: entityBounds.center)])
-        
-            // anchorEntity
-            let anchorEntity = AnchorEntity(plane: .any)
-            anchorEntity.name = "anchorEntity-\(uuidString)"
-            anchorEntity.addChild(parentEntity)
+            self.arView.scene.addAnchor(placingModelEntity.anchorEntity!)
 
-            // placing
-            let targetTransform = parentEntity.transform
-            
-            let newTransform = Transform(scale: SIMD3<Float>(repeating: 0.00), rotation: targetTransform.rotation, translation: targetTransform.translation)
-            parentEntity.transform = newTransform
-  
-            self.arView.scene.addAnchor(anchorEntity)
-            
-            parentEntity.move(to: targetTransform, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
+            placingModelEntity.parentEntity!.move(to: placingModelEntity.finalPlacementTransformation!, relativeTo: placingModelEntity.anchorEntity!, duration: 0.3, timingFunction: .easeIn)
             
             self.placingModelEntity = nil
             self.viewData = .initial
