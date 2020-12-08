@@ -92,26 +92,25 @@ class ARSessionView : UIView {
 
     // levitation
     var levitationTimer : Timer?
-    var baseLevitationPoint: SIMD3<Float>?
 
-    // for gestures
-    var oldTranslation      : SIMD3<Float>? {
-        willSet {
-            if let newValue = newValue, let newTranslation = newTranslation {
-                relativeTranslation = newValue - newTranslation
-            }
-        }
-    }
-    var newTranslation      : SIMD3<Float>? {
+    // MARK: Gestures
+    // Translation
+    var newTranslation: SIMD3<Float>? {
         didSet {
             if let oldValue = oldValue {
                 oldTranslation = oldValue
             }
         }
     }
-    var relativeTranslation : SIMD3<Float>?
-    // Point of placing of model (relative to y-axis)
-    var modelPlacementPoint : SIMD3<Float>?
+    var oldTranslation: SIMD3<Float>? {
+        willSet {
+            if let newValue = newValue, let newTranslation = newTranslation {
+                relativeTranslation = newValue - newTranslation
+            }
+        }
+    }
+    var relativeTranslation: SIMD3<Float>?
+
     
     // init
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
@@ -125,7 +124,16 @@ class ARSessionView : UIView {
         self.detectPlacementPointForTargetShape = false
         
         // setup gesture recognizers
-        self.makeScreenUITapGestureRecognizers()
+        self.makeScreenUITapGestureRecognizer()
+    }
+    
+    deinit {
+        for cancellable in [deletingMovingcomplete,
+                            startEditingMovingComplete,
+                            endEditingMovingComplete,
+                            killTargetShapeMovingComplete].compactMap({$0}) {
+            cancellable.cancel()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -184,17 +192,14 @@ class ARSessionView : UIView {
                     let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
                     parentEntity.collision = self.makeEditingCollisionComponent(entityBounds: entityBounds)
                     // add gestures
-                    self.arView.installGestures([.rotation, .scale], for: parentEntity)
-                    
-                    self.baseLevitationPoint = parentEntity.transform.translation
+                    self.arView.installGestures([.scale], for: parentEntity)
+
                     self.presentationMode = .editing
                     // gestures
-                    self.makeScreenUIPanGestureRecognizers()
-                    self.killUITapGestureRecognizers()
+                    self.makeScreenUIRecognizers()
+                    self.killUITapGestureRecognizer()
                     // levitation animation
                     self.makeLevitation(modelEntity: parentEntity)
-                    
-                    self.arView.debugOptions.insert(.showPhysics)
                 }
         }
     }
@@ -261,7 +266,12 @@ class ARSessionView : UIView {
     /// Tap handler on cancelButton when canceling model placement.
     /// - Parameter sender: UIButton as sender.
     @objc func cancelButtonPlacing (sender: UIButton) {
+        
+        // zeroing of irrelevant variables
         self.placingModelEntity = nil
+        self.initialPlacementTransformation = nil
+        self.finalPlacementTransformation = nil
+        
         self.viewData = .initial
     }
     
@@ -289,19 +299,14 @@ class ARSessionView : UIView {
                 let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
                 parentEntity.collision = self.makeNormalCollisionComponent(entityBounds: entityBounds)
                 // Make UITapGestureRecognizer
-                self.makeScreenUITapGestureRecognizers()
-                self.killUIPanGestureRecognizers()
-                
+                self.makeScreenUITapGestureRecognizer()
+                self.killScreenUIRecognizers()
                 // remove gestureRecognizers using filter RealityKit.EntityTranslationGestureRecognizer
                 self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == RealityKit.EntityTranslationGestureRecognizer.self})
                 
                 self.anchorEntityEditable = nil
-                self.baseLevitationPoint = nil
                 self.presentationMode = .initial
-                
-                self.arView.debugOptions = []
             }
-        
     }
     
     /// Tap handler on trashButton - animation and model deletion
@@ -326,7 +331,7 @@ class ARSessionView : UIView {
                     // remove anchorEnity
                     self.arView.scene.anchors.remove(anchorEnity)
                     // installation of general gesture recognizers for view.
-                    self.makeScreenUITapGestureRecognizers()
+                    self.makeScreenUITapGestureRecognizer()
                     // clearing irrelevant values
                     self.deletingMoving = nil
                     self.deletingMovingcomplete?.cancel()
@@ -335,7 +340,6 @@ class ARSessionView : UIView {
                 }
         }
     }
-
 }
 
 class ARSessionViewEvent {

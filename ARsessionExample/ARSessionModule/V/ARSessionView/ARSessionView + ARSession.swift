@@ -99,6 +99,6 @@ extension ARSessionView {
     /// Creates a CollisionComponent for the ModelEntity (edit mode).
     /// - Parameter entityBounds: BoundingBox.
     func makeEditingCollisionComponent (entityBounds: BoundingBox) -> CollisionComponent {
-        return CollisionComponent(shapes: [ShapeResource.generateSphere(radius: 3.0).offsetBy(translation: entityBounds.center)], mode: .default, filter: .default)
+        return CollisionComponent(shapes: [ShapeResource.generateSphere(radius: 3.0).offsetBy(translation: entityBounds.center)], mode: .trigger, filter: .sensor)
     }
 }
