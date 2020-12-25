@@ -16,12 +16,14 @@ extension ARSessionView {
     func makeScreenUIRecognizers() {
         self.makeScreenUIPanGestureRecognizer()
         self.makeScreenUIRotationGestureRecognizer()
+        self.makeScreenUIPinchGestureRecognizer()
     }
     
     /// Removing gestures to manipulate model in the current view
     func killScreenUIRecognizers() {
-        self.killUIPanGestureRecognizer()
-        self.killUIRotationGestureRecognizer()
+        self.killScreenUIPanGestureRecognizer()
+        self.killScreenUIRotationGestureRecognizer()
+        self.killScreenUIPinchGestureRecognizer()
     }
     
     /// Add screen gesture recognizers related to `UITapGestureRecognizer`.
@@ -42,7 +44,7 @@ extension ARSessionView {
     }
     
     /// Removes active gesture recognizers related to`UIPanGestureRecognizer`.
-    fileprivate func killUIPanGestureRecognizer () {
+    fileprivate func killScreenUIPanGestureRecognizer () {
         self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == UIPanGestureRecognizer.self})
     }
     
@@ -53,8 +55,19 @@ extension ARSessionView {
     }
     
     /// Removes active gesture recognizers related to`UIRotationGestureRecognizer`.
-    fileprivate func killUIRotationGestureRecognizer () {
+    fileprivate func killScreenUIRotationGestureRecognizer () {
         self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == UIRotationGestureRecognizer.self})
+    }
+    
+    /// Add screen gesture recognizers related to `UIPinchGestureRecognizer`.
+    fileprivate func makeScreenUIPinchGestureRecognizer () {
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(self.pinchGestureRecognizerHandler(sender:)))
+        self.arView.addGestureRecognizer(pinchRecognizer)
+    }
+    
+    /// Removes active gesture recognizers related to`UIPinchGestureRecognizer`.
+    fileprivate func killScreenUIPinchGestureRecognizer() {
+        self.arView.gestureRecognizers?.removeAll(where: {type(of: $0) == UIPinchGestureRecognizer.self})
     }
     
     // MARK: GestureRecognizers handlers
@@ -90,7 +103,7 @@ extension ARSessionView {
                 let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
                 parentEntity.collision = self.makeEditingCollisionComponent(entityBounds: entityBounds)
                 // add gestures
-                self.arView.installGestures([.scale], for: parentEntity)
+                //self.arView.installGestures([.scale], for: parentEntity)
                 
                 self.presentationMode = .editing
                 // gestures
@@ -164,6 +177,31 @@ extension ARSessionView {
             // planeShadowEntity rotation
             planeShadowEntity.transform.rotation = parentEntity.transform.rotation
         default:
+            self.makeLevitation(modelEntity: parentEntity)
+        }
+    }
+    
+    @objc func pinchGestureRecognizerHandler (sender: UIPinchGestureRecognizer) {
+        guard self.arView == sender.view,
+              let parentEntity = arView.entity(at: sender.location(in: arView)) as? ModelEntity,
+              let anchorEntity = parentEntity.parent,
+              let planeShadowEntity = anchorEntity.children.first(where: {$0.name.hasPrefix(SettingsApp.planeShadowPrefix)})
+        else { return }
+        
+        self.killLevitation(modelEntity: parentEntity)
+        
+        switch sender.state {
+        case .possible, .began, .changed:
+            parentEntity.setScale(SIMD3<Float>(x: Float(sender.scale),
+                                               y: Float(sender.scale),
+                                               z: Float(sender.scale)),
+                                  relativeTo: anchorEntity)
+            planeShadowEntity.setScale(SIMD3<Float>(x: Float(sender.scale),
+                                                    y: Float(sender.scale),
+                                                    z: Float(sender.scale)),
+                                       relativeTo: anchorEntity)
+        default:
+            sender.scale = 1.0
             self.makeLevitation(modelEntity: parentEntity)
         }
     }
