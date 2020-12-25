@@ -98,7 +98,7 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
     ///   - arAnchorName: ARAnchor name for forming names (optional).
     ///   - modelId: Model Id.
     /// - Returns: Tuple of names (arAnchorName, modelEntityName, parentEntityName, anchorEntityName).
-    fileprivate func makeEntitiesNames(arAnchorName: String? = nil, modelId: Int) ->  (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String){
+    fileprivate func makeEntitiesNames(arAnchorName: String? = nil, modelId: Int) ->  (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String, planeShadowName: String){
         if let arAnchorName = arAnchorName {
             // for example: 'modelARAnchor_1_69701c87-21f1-4ba7-8c2d-8854bb6ba65e'
             let aranchorNameSubstrings = arAnchorName.split(separator: "_")
@@ -114,14 +114,16 @@ final class ARSessionVMImplement : NSObject, ARSessionVM {
             return (arAnchorName: arAnchorName,
                     modelEntityName: "\(SettingsApp.modelEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)",
                     parentEntityName: "\(SettingsApp.parentEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)",
-                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)")
+                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(modelIdString)_\(modelExampleUUIDString)",
+                    planeShadowName:  "\(SettingsApp.planeShadowPrefix)_\(modelIdString)_\(modelExampleUUIDString)")
 
         } else{
             let uuidString = UUID().uuidString
             return (arAnchorName: "\(SettingsApp.modelARAnchorPrefix)_\(String(modelId))_\(uuidString)",
                     modelEntityName: "\(SettingsApp.modelEntityPrefix)_\(String(modelId))_\(uuidString)",
                     parentEntityName: "\(SettingsApp.parentEntityPrefix)_\(String(modelId))_\(uuidString)",
-                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(String(modelId))_\(uuidString)")
+                    anchorEntityName: "\(SettingsApp.anchorEntityPrefix)_\(String(modelId))_\(uuidString)",
+                    planeShadowName:  "\(SettingsApp.planeShadowPrefix)_\(String(modelId))_\(uuidString)")
         }
     }
     

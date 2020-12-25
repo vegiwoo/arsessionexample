@@ -8,8 +8,49 @@
 import Foundation
 import UIKit
 import RealityKit
+import ARKit
 
 extension ARSessionView {
+    
+    // MARK: Lights
+    func createLights()  {
+        
+        
+        
+        
+        
+        
+        
+        let directionalLight = DirectionalLight()
+        directionalLight.light.color = .red
+        directionalLight.light.intensity = 20000
+        directionalLight.light.isRealWorldProxy = true
+        
+        let shadow = DirectionalLightComponent.Shadow(maximumDistance: 0.3, depthBias: 0.3)
+        directionalLight.shadow = shadow
+        
+       // directionalLight.orientation = simd_quatf(angle: (90 * .pi / 180), axis: SIMD3<Float>(x: 1, y: 0, z: 0))
+        
+        let dlMaterial = SimpleMaterial(color: .red, isMetallic: false)
+        let dlMesh = MeshResource.generatePlane(width: 0.5, height: 0.5, cornerRadius: 25)
+        let dlPlaneEntity = ModelEntity(mesh: dlMesh, materials: [dlMaterial])
+        directionalLight.addChild(dlPlaneEntity)
+        
+//        let pointLight = PointLight()
+//        pointLight.light.color = .blue
+//        pointLight.light.intensity = 15000000
+//        pointLight.light.attenuationRadius = 7.0
+//        pointLight.position = SIMD3<Float>(x: directionalLight.position.x + 1.0, y: directionalLight.position.y, z: directionalLight.position.z + 1.0)
+//
+//        let plMaterial = SimpleMaterial(color: .blue, isMetallic: false)
+//        let plMesh = MeshResource.generatePlane(width: 0.5, height: 0.5, cornerRadius: 25)
+//        let plPlaneEntity = ModelEntity(mesh: plMesh, materials: [plMaterial])
+//        pointLight.addChild(plPlaneEntity)
+        
+
+        
+        //return (directionalLight, spotLight)
+    }
     
     // MARK: TargetShape
     /// Creates a target shape.
@@ -100,5 +141,65 @@ extension ARSessionView {
     /// - Parameter entityBounds: BoundingBox.
     func makeEditingCollisionComponent (entityBounds: BoundingBox) -> CollisionComponent {
         return CollisionComponent(shapes: [ShapeResource.generateSphere(radius: 3.0).offsetBy(translation: entityBounds.center)], mode: .trigger, filter: .sensor)
+    }
+    
+    func placeEntity(by anchor: ARAnchor) {
+
+        guard let modelEntity = self.placingModelEntity,
+              let names = self.names else { return }
+        
+        // modelEntity naming
+        modelEntity.name = names.modelEntityName
+        
+        // add parentEntiry
+        let parentEntity = ModelEntity()
+        parentEntity.name = names.parentEntityName
+        parentEntity.addChild(modelEntity)
+        
+        // add collision to parentEntiry
+        let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
+        parentEntity.collision = self.makeNormalCollisionComponent(entityBounds: entityBounds)
+
+        // anchorEntity
+        let anchorEntity = AnchorEntity(anchor: anchor)
+        anchorEntity.name = names.anchorEntityName
+        anchorEntity.addChild(parentEntity)
+        
+        // planeCalculatingShadow
+        //let material = OcclusionMaterial(receivesDynamicLighting: true)
+        let material = SimpleMaterial(color: .white, isMetallic: false)
+        guard let maxSide = [parentEntity.visualBounds(relativeTo: anchorEntity).extents.x, parentEntity.visualBounds(relativeTo: anchorEntity).extents.z].max() else { return }
+        let mesh = MeshResource.generatePlane(width: maxSide, depth: maxSide)
+        let planeCalculatingShadow = ModelEntity(mesh: mesh, materials: [material])
+        if let planeShadowName = self.names?.planeShadowName {
+            planeCalculatingShadow.name = planeShadowName
+        }
+        anchorEntity.addChild(planeCalculatingShadow)
+
+        // transformation
+        // remember target dimensions of model
+        self.finalPlacementTransformation = parentEntity.transform
+        // zero out size of model for smooth appearance
+        self.initialPlacementTransformation = Transform(scale: SIMD3<Float>(repeating: 0.00),
+                                                        rotation: self.finalPlacementTransformation!.rotation,
+                                                        translation: self.finalPlacementTransformation!.translation)
+        parentEntity.transform = initialPlacementTransformation!
+        
+        // add to scene
+        self.arView.scene.addAnchor(anchorEntity)
+        
+        parentEntity.move(to: finalPlacementTransformation!, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
+        
+        // zeroing of irrelevant variables
+        self.placingModelEntity = nil
+        self.initialPlacementTransformation = nil
+        self.finalPlacementTransformation = nil
+        self.names = nil
+        
+        self.viewData = .initial
+    }
+    
+    func degreesToRadians(degrees: Float) -> Float {
+        return (degrees * .pi) / 180
     }
 }

@@ -24,4 +24,5 @@ final class SettingsApp {
     static var modelEntityPrefix    : String = "modelEntity"
     static var parentEntityPrefix   : String = "parentEntity"
     static var anchorEntityPrefix   : String = "anchorEntity"
+    static var planeShadowPrefix    : String = "planeShadow"
 }

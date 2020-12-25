@@ -52,7 +52,7 @@ class ARSessionView : UIView {
             }
         }
     }
-    var names: (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String)?
+    var names: (arAnchorName: String, modelEntityName: String, parentEntityName: String, anchorEntityName: String, planeShadowName: String)?
     var initialPlacementTransformation: Transform?
     var finalPlacementTransformation: Transform?
     
@@ -111,7 +111,6 @@ class ARSessionView : UIView {
     }
     var relativeTranslation: SIMD3<Float>?
 
-    
     // init
     init(frame: CGRect, arSessionViewEvent: ARSessionViewEvent) {
         self.arSessionViewEvent = arSessionViewEvent
@@ -119,7 +118,8 @@ class ARSessionView : UIView {
         
         self.setupView()
         self.setupConstrains()
-    
+        
+        
         self.presentationMode = ARSessionViewPresentationMode.initial
         self.detectPlacementPointForTargetShape = false
         
@@ -146,7 +146,6 @@ class ARSessionView : UIView {
         switch viewData {
         case .initial:
             print("DEBUG: ARSessionView viewData initial - \(Date())")
-            break
         case .linkTo(arSession: let arSession):
             self.arView.session = arSession
             self.arView.session.delegate = self
@@ -158,6 +157,34 @@ class ARSessionView : UIView {
                 self.arCoachingOverlayView.session = arSession
                 self.arCoachingOverlayView.delegate = self
             }
+
+            // Custom lights
+            let dl = DirectionalLight()
+            dl.light.color = #colorLiteral(red: 0.9764705896, green: 0.850980401, blue: 0.5490196347, alpha: 1)
+            dl.light.intensity = 5000
+            dl.light.isRealWorldProxy = true
+            dl.shadow = DirectionalLightComponent.Shadow(maximumDistance: 0.20, depthBias: 0.1)
+            dl.orientation = simd_quatf(angle: self.degreesToRadians(degrees: -90), axis: SIMD3<Float>(x: 1, y: 0, z: 0))
+            
+            dl.position.y = 3.0
+            dl.orientation = simd_quatf(angle: -.pi/1.5,
+                                                axis: [1,0,0])
+            let slMaterial = SimpleMaterial(color: .green, isMetallic: false)
+            let slMesh = MeshResource.generatePlane(width: 0.5, height: 0.5, cornerRadius: 25)
+            let slPlaneEntity = ModelEntity(mesh: slMesh, materials: [slMaterial])
+            dl.addChild(slPlaneEntity)
+            
+            
+            let slAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 3, z: 0))
+            slAnchor.name = "lightAnchor_sl"
+            slAnchor.addChild(dl)
+            
+            //arView.scene.addAnchor(plAnchor)
+            //arView.scene.addAnchor(dlAnchor)
+            arView.scene.addAnchor(slAnchor)
+            
+            //arView.renderOptions.insert(.disableAREnvironmentLighting)
+            
         case .createSuccess(let modelEntity, let names):
             self.names = names
             self.placingModelEntity = modelEntity
@@ -166,49 +193,10 @@ class ARSessionView : UIView {
     }
     
     // MARK: Action handlers
-    /// Tap handler for an existing model to start editing it.
-    /// - Parameter sender: UITapGestureRecognizer as sender.
-    @objc func tapGestureRecognizerHandler (sender: UITapGestureRecognizer) {
-
-        guard sender.view == self.arView else { fatalError()} // TODO: !! !
-
-        let entities = (sender.view as! ARView).entities(at: sender.location(in: sender.view))
-        if let parentEntity = entities.first as? ModelEntity,
-           let anchorEntity = parentEntity.parent as? AnchorEntity,
-           let modelEntity = parentEntity.children.first {
-  
-            self.anchorEntityEditable = anchorEntity
-
-            let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
-                                              y: parentEntity.transform.translation.y + 0.10,
-                                              z: parentEntity.transform.translation.z)
-            let transform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
-           
-            self.startEditingMoving = parentEntity.move(to: transform, relativeTo: anchorEntity, duration: 0.8, timingFunction: .easeIn)
-            self.startEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
-                .filter{$0.playbackController == self.startEditingMoving}
-                .sink{ _ in
-                    // overriding CollisionComponent
-                    let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
-                    parentEntity.collision = self.makeEditingCollisionComponent(entityBounds: entityBounds)
-                    // add gestures
-                    self.arView.installGestures([.scale], for: parentEntity)
-
-                    self.presentationMode = .editing
-                    // gestures
-                    self.makeScreenUIRecognizers()
-                    self.killUITapGestureRecognizer()
-                    // levitation animation
-                    self.makeLevitation(modelEntity: parentEntity)
-                }
-        }
-    }
-    
     /// Tap handler for modelButton and publish '.createModelEntityFromFile' request.
     /// - Parameter sender: UIButton as sender.
     @objc func modelButtonTapHandler(sender: UIButton) {
         self.arSessionViewEvent.publish(request: .createModelEntityFromFile)
-        
     }
     
     /// Tap handler for settingsButton and publish '.showSettingsPage' request.
@@ -221,46 +209,13 @@ class ARSessionView : UIView {
     /// - Parameter sender:  UIButton as sender.
     @objc func successButtonPlacing (sender: UIButton) {
         
-        guard let modelEntity = self.placingModelEntity,
-              let names = self.names else { return }
+        guard let transform = self.targetShapeWorldTransform,
+              let name = self.names?.arAnchorName
+        else { return }
         
-        // modelEntity naming
-        modelEntity.name = names.modelEntityName
-        
-        // add parentEntiry
-        let parentEntity = ModelEntity()
-        parentEntity.name = names.parentEntityName
-        parentEntity.addChild(modelEntity)
-        
-        // add collision to parentEntiry
-        let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
-        parentEntity.collision = self.makeNormalCollisionComponent(entityBounds: entityBounds)
-        
-        // anchorEntity
-        let anchorEntity = AnchorEntity(plane: .any)
-        anchorEntity.name = names.anchorEntityName
-        anchorEntity.addChild(parentEntity)
-        
-        // transformation
-        // remember target dimensions of model
-        self.finalPlacementTransformation = parentEntity.transform
-        // zero out size of model for smooth appearance
-        self.initialPlacementTransformation = Transform(scale: SIMD3<Float>(repeating: 0.00),
-                                                        rotation: self.finalPlacementTransformation!.rotation,
-                                                        translation: self.finalPlacementTransformation!.translation)
-        parentEntity.transform = initialPlacementTransformation!
-        
-        // add to scene
-        self.arView.scene.addAnchor(anchorEntity)
-        
-        parentEntity.move(to: finalPlacementTransformation!, relativeTo: anchorEntity, duration: 0.3, timingFunction: .easeIn)
-        
-        // zeroing of irrelevant variables
-        self.placingModelEntity = nil
-        self.initialPlacementTransformation = nil
-        self.finalPlacementTransformation = nil
-        
-        self.viewData = .initial
+        let anchor = ARAnchor(name: name, transform: transform)
+    
+        self.arView.session.add(anchor: anchor)
     }
         
     /// Tap handler on cancelButton when canceling model placement.
@@ -284,13 +239,14 @@ class ARSessionView : UIView {
               let modelEntity = parentEntity.children.first
         else { return }
 
+        self.killLevitation(modelEntity: parentEntity)
+        
         let newTranslation = SIMD3<Float>(x: parentEntity.transform.translation.x,
                                           y: 0.00,
                                           z: parentEntity.transform.translation.z)
         
         let newTransformform = Transform(scale: parentEntity.transform.scale, rotation: parentEntity.transform.rotation, translation: newTranslation)
         
-        self.killLevitation(modelEntity: parentEntity)
         self.endEditingMoving = parentEntity.move(to: newTransformform, relativeTo: anchorEntityEditable, duration: 0.8, timingFunction: .easeOut)
         self.endEditingMovingComplete = self.arView.scene.publisher(for: AnimationEvents.PlaybackCompleted.self)
             .filter{$0.playbackController == self.endEditingMoving}
@@ -368,6 +324,17 @@ enum ARSessionViewEventRequest {
 }
 
 extension ARSessionView : ARSessionDelegate {
+    
+    func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
+        for anchor in anchors {
+            guard let name = anchor.name,
+                  let anchorName = self.names?.arAnchorName,
+                  anchorName == name
+            else { return }
+            self.placeEntity(by: anchor)
+        }
+    }
+    
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         if detectPlacementPointForTargetShape {
             
