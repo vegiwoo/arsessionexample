@@ -160,30 +160,26 @@ class ARSessionView : UIView {
 
             // Custom lights
             let dl = DirectionalLight()
-            dl.light.color = #colorLiteral(red: 0.9764705896, green: 0.850980401, blue: 0.5490196347, alpha: 1)
+            // https://ksosvet.ru/blog/cvetovaya-temperatura-svetodiodnyh-lamp-chto-ehto-znachenie-v-osveshchenii
+            // https://andi-siess.de/rgb-to-color-temperature/
+            // https://www.uicolor.io/
+            dl.light.color = UIColor(red: 0.88, green: 0.71, blue: 0.42, alpha: 0.50)
             dl.light.intensity = 5000
             dl.light.isRealWorldProxy = true
-            dl.shadow = DirectionalLightComponent.Shadow(maximumDistance: 0.20, depthBias: 0.1)
+            dl.shadow = DirectionalLightComponent.Shadow(maximumDistance: 2.00, depthBias: 0.1)
             dl.orientation = simd_quatf(angle: self.degreesToRadians(degrees: -90), axis: SIMD3<Float>(x: 1, y: 0, z: 0))
-            
-            dl.position.y = 3.0
-            dl.orientation = simd_quatf(angle: -.pi/1.5,
-                                                axis: [1,0,0])
+           // dl.position = SIMD3<Float>(x: 0.0, y: 3.0, z: 0.0)
+    
             let slMaterial = SimpleMaterial(color: .green, isMetallic: false)
-            let slMesh = MeshResource.generatePlane(width: 0.5, height: 0.5, cornerRadius: 25)
+            let slMesh = MeshResource.generatePlane(width: 1.0, height: 1.0, cornerRadius: 25)
             let slPlaneEntity = ModelEntity(mesh: slMesh, materials: [slMaterial])
             dl.addChild(slPlaneEntity)
-            
             
             let slAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 3, z: 0))
             slAnchor.name = "lightAnchor_sl"
             slAnchor.addChild(dl)
-            
-            //arView.scene.addAnchor(plAnchor)
-            //arView.scene.addAnchor(dlAnchor)
+
             arView.scene.addAnchor(slAnchor)
-            
-            //arView.renderOptions.insert(.disableAREnvironmentLighting)
             
         case .createSuccess(let modelEntity, let names):
             self.names = names

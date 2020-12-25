@@ -166,8 +166,8 @@ extension ARSessionView {
         anchorEntity.addChild(parentEntity)
         
         // planeCalculatingShadow
-        //let material = OcclusionMaterial(receivesDynamicLighting: true)
-        let material = SimpleMaterial(color: .white, isMetallic: false)
+        let material = OcclusionMaterial(receivesDynamicLighting: true)
+       // let material = SimpleMaterial(color: .white, isMetallic: false)
         guard let maxSide = [parentEntity.visualBounds(relativeTo: anchorEntity).extents.x, parentEntity.visualBounds(relativeTo: anchorEntity).extents.z].max() else { return }
         let mesh = MeshResource.generatePlane(width: maxSide, depth: maxSide)
         let planeCalculatingShadow = ModelEntity(mesh: mesh, materials: [material])
