@@ -16,17 +16,16 @@ extension ARSessionView {
         let kinematics: PhysicsBodyComponent = .init(massProperties: PhysicsMassProperties(mass: 3.0), material: nil, mode: .kinematic)
         modelEntity.components.set(kinematics)
 
-        let motion : PhysicsMotionComponent = .init(linearVelocity:  [0, 0.03, 0], angularVelocity: [0, 0, 0])
+        let motion : PhysicsMotionComponent = .init(linearVelocity:  [0, 0.03, 0], angularVelocity: [0.01, 0.01, 0.01])
         modelEntity.components.set(motion)
-        
         var up = true; var down = false
         
         levitationTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { timer in
             if up {
-                modelEntity.components[PhysicsMotionComponent] = .init(linearVelocity:  [0, -0.03, 0], angularVelocity: [0, 0, 0])
+                modelEntity.components[PhysicsMotionComponent] = .init(linearVelocity:  [0, -0.03, 0], angularVelocity: [-0.01, -0.01, -0.01])
                 down = true; up = false
             } else if down {
-                modelEntity.components[PhysicsMotionComponent] = .init(linearVelocity:  [0, 0.03, 0], angularVelocity: [0, 0, 0])
+                modelEntity.components[PhysicsMotionComponent] = .init(linearVelocity:  [0, 0.03, 0], angularVelocity: [0.01, 0.01, 0.01])
                 down = false; up = true
             }
         }

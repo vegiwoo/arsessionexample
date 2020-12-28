@@ -91,13 +91,13 @@ extension ARSessionView {
                                   rotation: parentEntity.transform.rotation,
                                   translation: newTranslation)
         // moving
-        self.startEditingMoving = parentEntity.move(to: transform,
+        self.startModelEditingMoving = parentEntity.move(to: transform,
                                                     relativeTo: anchorEntity,
                                                     duration: 0.8,
                                                     timingFunction: .easeIn)
-        self.startEditingMovingComplete = self.arView.scene
+        self.startModelEditingMovingComplete = self.arView.scene
             .publisher(for: AnimationEvents.PlaybackCompleted.self)
-            .filter{$0.playbackController == self.startEditingMoving}
+            .filter{$0.playbackController == self.startModelEditingMoving}
             .sink{ _ in
                 // overriding CollisionComponent
                 let entityBounds = modelEntity.visualBounds(relativeTo: parentEntity)
@@ -137,6 +137,7 @@ extension ARSessionView {
             if let relativeTranslation = relativeTranslation {
                 // stop the levitation animation
                 self.killLevitation(modelEntity: parentEntity)
+                
                 let newTranslationParentEntity = SIMD3<Float>(x: parentEntity.transform.translation.x - relativeTranslation.x,
                                                                y: parentEntity.transform.translation.y,
                                                                z: parentEntity.transform.translation.z - relativeTranslation.z)
@@ -163,6 +164,7 @@ extension ARSessionView {
         
         guard self.arView == sender.view,
               let parentEntity = arView.entity(at: sender.location(in: arView)) as? ModelEntity,
+              let anchorEntity = parentEntity.parent,
               let planeShadowEntity = parentEntity.parent?.children.first(where: {$0.name.hasPrefix(SettingsApp.planeShadowPrefix)})
         else { return }
         
@@ -170,10 +172,8 @@ extension ARSessionView {
 
         switch sender.state {
         case .possible, .began,.changed:
-            let rotation = simd_quatf.init(angle: Float(sender.rotation), axis: SIMD3<Float>(x: 0, y: 1, z: 0))
-            let newTranform = Transform(scale: parentEntity.transform.scale, rotation: rotation, translation: parentEntity.transform.translation)
             // parentEntity rotation
-            parentEntity.transform = newTranform
+            parentEntity.setOrientation(simd_quatf.init(angle: Float(sender.rotation), axis: SIMD3<Float>(x: 0, y: 1, z: 0)), relativeTo: anchorEntity)
             // planeShadowEntity rotation
             planeShadowEntity.transform.rotation = parentEntity.transform.rotation
         default:
@@ -192,10 +192,12 @@ extension ARSessionView {
         
         switch sender.state {
         case .possible, .began, .changed:
+            // parentEntity scaling
             parentEntity.setScale(SIMD3<Float>(x: Float(sender.scale),
                                                y: Float(sender.scale),
                                                z: Float(sender.scale)),
                                   relativeTo: anchorEntity)
+            // planeShadowEntity
             planeShadowEntity.setScale(SIMD3<Float>(x: Float(sender.scale),
                                                     y: Float(sender.scale),
                                                     z: Float(sender.scale)),

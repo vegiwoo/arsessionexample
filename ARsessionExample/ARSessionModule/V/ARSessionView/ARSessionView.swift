@@ -64,8 +64,10 @@ class ARSessionView : UIView {
     // animating
     var deletingMoving : AnimationPlaybackController!
     var deletingMovingcomplete : AnyCancellable?
-    var startEditingMoving: AnimationPlaybackController!
-    var startEditingMovingComplete: AnyCancellable?
+    var startModelEditingMoving: AnimationPlaybackController!
+    var startModelEditingMovingComplete: AnyCancellable?
+    var startPlaneShadowEditingMoving: AnimationPlaybackController!
+    var startPlaneShadowEditingMovingComplete: AnyCancellable?
     var endEditingMoving : AnimationPlaybackController!
     var endEditingMovingComplete : AnyCancellable?
     
@@ -129,7 +131,7 @@ class ARSessionView : UIView {
     
     deinit {
         for cancellable in [deletingMovingcomplete,
-                            startEditingMovingComplete,
+                            startModelEditingMovingComplete,
                             endEditingMovingComplete,
                             killTargetShapeMovingComplete].compactMap({$0}) {
             cancellable.cancel()
@@ -163,24 +165,16 @@ class ARSessionView : UIView {
             // https://ksosvet.ru/blog/cvetovaya-temperatura-svetodiodnyh-lamp-chto-ehto-znachenie-v-osveshchenii
             // https://andi-siess.de/rgb-to-color-temperature/
             // https://www.uicolor.io/
-            dl.light.color = UIColor(red: 0.88, green: 0.71, blue: 0.42, alpha: 0.50)
+            dl.light.color = UIColor(red: 0.88, green: 0.71, blue: 0.42, alpha: 0.30)
             dl.light.intensity = 5000
             dl.light.isRealWorldProxy = true
-            dl.shadow = DirectionalLightComponent.Shadow(maximumDistance: 2.00, depthBias: 0.1)
+            dl.shadow = DirectionalLightComponent.Shadow(maximumDistance: 1.00, depthBias: 0.05)
             dl.orientation = simd_quatf(angle: self.degreesToRadians(degrees: -90), axis: SIMD3<Float>(x: 1, y: 0, z: 0))
-           // dl.position = SIMD3<Float>(x: 0.0, y: 3.0, z: 0.0)
-    
-            let slMaterial = SimpleMaterial(color: .green, isMetallic: false)
-            let slMesh = MeshResource.generatePlane(width: 1.0, height: 1.0, cornerRadius: 25)
-            let slPlaneEntity = ModelEntity(mesh: slMesh, materials: [slMaterial])
-            dl.addChild(slPlaneEntity)
-            
-            let slAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 3, z: 0))
+            let slAnchor = AnchorEntity(world: SIMD3<Float>(x: 0, y: 8, z: 0))
+            slAnchor.setScale(SIMD3<Float>(x: 10, y: 1, z: 10), relativeTo: nil)
             slAnchor.name = "lightAnchor_sl"
             slAnchor.addChild(dl)
-
             arView.scene.addAnchor(slAnchor)
-            
         case .createSuccess(let modelEntity, let names):
             self.names = names
             self.placingModelEntity = modelEntity
